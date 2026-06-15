@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genomic Breeding Report — MangoGenomics Lab</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #1e293b;
+            background: #ffffff;
+            line-height: 1.5;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #0f172a;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            color: #64748b;
+        }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .meta-item {
+            font-size: 14px;
+        }
+        .meta-item strong {
+            color: #475569;
+        }
+        h2 {
+            font-size: 18px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-top: 30px;
+            color: #0f172a;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 13px;
+        }
+        th {
+            background: #f1f5f9;
+            color: #475569;
+            text-align: left;
+            padding: 10px;
+            font-weight: 600;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .similarity-bar {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            width: 100px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+            overflow: hidden;
+        }
+        .similarity-progress {
+            background: #0f172a;
+            height: 100%;
+        }
+        .no-print-btn {
+            background: #0f172a;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            float: right;
+        }
+        .no-print-btn:hover {
+            background: #1e293b;
+        }
+        @media print {
+            .no-print-btn {
+                display: none;
+            }
+            body {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="no-print-btn" onclick="window.print()">Print / Save PDF</button>
+
+    <div class="header">
+        <div>
+            <h1>MangoGenomics Lab</h1>
+            <p>Accession Genomic Selection Breeding Report</p>
+        </div>
+        <div style="text-align: right;">
+            <p><strong>Genomics DB:</strong> GCF_011075055.1</p>
+            <p><strong>Reference:</strong> M. indica (35,754 Genes)</p>
+        </div>
+    </div>
+
+    <div class="meta-grid">
+        <div class="meta-item">
+            <strong>Accession Name / ID:</strong> {{ data.alignment_stats.filename if data.alignment_stats else 'Simulated Accession' }}
+        </div>
+        <div class="meta-item">
+            <strong>Prediction Model:</strong> {{ data.model_used }}
+        </div>
+        <div class="meta-item">
+            <strong>SNP Markers Matched:</strong> {{ data.alignment_stats.n_matched if data.alignment_stats else '135,079' }} / 135,079
+        </div>
+        <div class="meta-item">
+            <strong>Marker Match Rate:</strong> {{ data.alignment_stats.match_percentage if data.alignment_stats else '100' }}%
+        </div>
+        <div class="meta-item">
+            <strong>Imputation Rate:</strong> {{ data.alignment_stats.n_imputed if data.alignment_stats else '0' }} loci (mean-imputed)
+        </div>
+        <div class="meta-item">
+            <strong>Report Generated:</strong> <span id="report-date"></span>
+        </div>
+    </div>
+
+    <h2>Genomic Phenotypic Predictions</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Trait Name</th>
+                <th>Predicted breeding value</th>
+                <th>95% Confidence Interval</th>
+                <th>Unit</th>
+                <th>Population Mean (μ)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for trait, info in data.predictions.items() %}
+            <tr>
+                <td><strong>{{ trait }}</strong></td>
+                <td>{{ info.predicted }}</td>
+                <td>[{{ info.ci_lower }} – {{ info.ci_upper }}]</td>
+                <td>{{ info.unit }}</td>
+                <td>{{ info.population_mean }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Genetic Similarity Profiles</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Similarity Rank</th>
+                <th>Genetically Closest Cultivar</th>
+                <th>Euclidean Genetic Distance</th>
+                <th>Genetic Similarity (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cv in data.similar_cultivars %}
+            <tr>
+                <td>#{{ loop.index }}</td>
+                <td><strong>{{ cv.cultivar }}</strong></td>
+                <td>{{ cv.distance }}</td>
+                <td>
+                    <div class="similarity-bar">
+                        <div class="similarity-progress" style="width: {{ cv.similarity_pct }}%;"></div>
+                    </div>
+                    {{ cv.similarity_pct }}%
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 50px; font-size: 11px; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+        Disclaimer: This breeding report is derived from genomic prediction models trained on 161 accessions and 135,079 SNP markers. Predicted values represent expected breeding metrics based on genetic data.
+    </div>
+
+    <script>
+        document.getElementById('report-date').innerText = new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString();
+    </script>
+</body>
+</html>

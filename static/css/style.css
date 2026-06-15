@@ -1,0 +1,2750 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   MangoGenomics Lab — Premium Dark Glassmorphism Design System
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ────────────────────────────────────────────
+   CSS Custom Properties
+   ──────────────────────────────────────────── */
+:root {
+    /* Core Palette */
+    --color-bg-primary: #0b0e14;
+    --color-bg-secondary: #121622;
+    --color-bg-tertiary: #1a2030;
+
+    /* Accent Colors (Mapped to Navy/Teal system) */
+    --orange: #2563eb;     /* Professional Navy Blue */
+    --gold: #14b8a6;       /* Premium Teal */
+    --green: #10b981;
+    --cyan: #0d9488;       /* Teal gradient */
+    --red: #ef4444;
+    --success: #10b981;
+
+    /* Glass Card */
+    --glass-bg: rgba(18, 22, 34, 0.72);
+    --glass-blur: 20px;
+    --glass-border: rgba(20, 184, 166, 0.08);
+    --glass-border-hover: rgba(20, 184, 166, 0.22);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --glass-shadow-hover: 0 12px 40px rgba(20, 184, 166, 0.06);
+    --glass-radius: 16px;
+
+    /* Typography */
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
+    --color-text: #c8ccd4;
+    --color-heading: #ffffff;
+    --color-muted: #6b7280;
+
+    /* Nucleotide Colors */
+    --nt-a: #ff6b6b;
+    --nt-t: #ffd93d;
+    --nt-g: #6bcb77;
+    --nt-c: #4d96ff;
+
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-base: 0.3s ease;
+    --transition-slow: 0.5s ease;
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+
+    /* Navbar */
+    --navbar-height: 72px;
+}
+
+/* ────────────────────────────────────────────
+   Global Reset & Base
+   ──────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text);
+    background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 40%, var(--color-bg-tertiary) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Animated gradient accent line at top of page */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--orange), var(--gold), var(--cyan), var(--orange), transparent);
+    background-size: 300% 100%;
+    animation: gradientSlide 8s ease-in-out infinite;
+    z-index: 10000;
+}
+
+@keyframes gradientSlide {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
+}
+
+/* Subtle dot pattern overlay */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+        radial-gradient(circle at 1px 1px, rgba(6, 182, 212, 0.03) 1px, transparent 0);
+    background-size: 40px 40px;
+}
+
+/* ────────────────────────────────────────────
+   Custom Scrollbar
+   ──────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(10, 10, 15, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(20, 184, 166, 0.35);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(20, 184, 166, 0.6);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(20, 184, 166, 0.35) rgba(10, 10, 15, 0.5);
+}
+
+.sidebar-group-title {
+    display: none;
+}
+
+/* ────────────────────────────────────────────
+   Typography
+   ──────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--color-heading);
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+h2 {
+    font-size: 1.65rem;
+    letter-spacing: -0.02em;
+}
+
+h3 {
+    font-size: 1.25rem;
+}
+
+h4 {
+    font-size: 1.05rem;
+}
+
+p {
+    color: var(--color-text);
+}
+
+a {
+    color: var(--orange);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--gold);
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, var(--orange), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.mono {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+}
+
+/* ────────────────────────────────────────────
+   NAVBAR
+   ──────────────────────────────────────────── */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: var(--navbar-height);
+    background: rgba(10, 10, 15, 0.82);
+    backdrop-filter: blur(28px) saturate(1.5);
+    -webkit-backdrop-filter: blur(28px) saturate(1.5);
+    border-bottom: 1px solid rgba(255, 146, 51, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35), 0 0 60px rgba(255, 146, 51, 0.03);
+}
+
+.navbar-inner {
+    max-width: 1440px;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-xl);
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-shrink: 0;
+}
+
+.logo-icon {
+    font-size: 2rem;
+    filter: drop-shadow(0 0 8px rgba(255, 146, 51, 0.4));
+    animation: logoPulse 3s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+
+.logo-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--orange), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.01em;
+}
+
+.logo-subtitle {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+.tab-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,146,51,0.3) transparent;
+    padding-bottom: 4px;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.tab-nav::-webkit-scrollbar {
+    height: 3px;
+}
+
+.tab-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.tab-nav::-webkit-scrollbar-thumb {
+    background: rgba(255,146,51,0.3);
+    border-radius: 3px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    color: var(--color-muted);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding: 8px 16px;
+    cursor: pointer;
+    position: relative;
+    transition: color var(--transition-base);
+    white-space: nowrap;
+    border-radius: 8px;
+}
+
+.tab-btn .tab-icon {
+    margin-right: 4px;
+    font-size: 0.9em;
+}
+
+.tab-btn:hover {
+    color: var(--color-text);
+    background: rgba(255, 146, 51, 0.05);
+}
+
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 70%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--orange), var(--gold));
+    border-radius: 2px;
+    transition: transform var(--transition-base);
+    box-shadow: 0 0 10px rgba(255, 146, 51, 0.4);
+}
+
+.tab-btn.active {
+    color: var(--orange);
+}
+
+.tab-btn.active::after {
+    transform: translateX(-50%) scaleX(1);
+}
+
+.tab-btn:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+/* ────────────────────────────────────────────
+   MAIN CONTENT
+   ──────────────────────────────────────────── */
+.main-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: calc(var(--navbar-height) + var(--space-xl)) var(--space-xl) var(--space-2xl);
+}
+
+.content-section {
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.section-heading {
+    margin-bottom: var(--space-lg);
+    margin-top: var(--space-2xl);
+}
+
+.section-heading:first-child {
+    margin-top: 0;
+}
+
+.section-desc {
+    color: var(--color-muted);
+    font-size: 0.93rem;
+    margin-top: var(--space-xs);
+    max-width: 720px;
+}
+
+/* ────────────────────────────────────────────
+   GLASS CARD
+   ──────────────────────────────────────────── */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--glass-radius);
+    box-shadow: var(--glass-shadow);
+    padding: var(--space-lg) var(--space-xl);
+    transition:
+        border-color var(--transition-base),
+        box-shadow var(--transition-base),
+        transform var(--transition-base);
+    margin-bottom: var(--space-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 146, 51, 0.02),
+        transparent
+    );
+    transition: left 0.6s ease;
+    pointer-events: none;
+}
+
+.glass-card:hover::before {
+    left: 100%;
+}
+
+.glass-card:hover {
+    border-color: var(--glass-border-hover);
+    box-shadow: var(--glass-shadow-hover), 0 0 40px rgba(255, 146, 51, 0.04);
+    transform: translateY(-3px);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+}
+
+/* ────────────────────────────────────────────
+   BADGES
+   ──────────────────────────────────────────── */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.badge-info {
+    background: rgba(0, 212, 255, 0.12);
+    color: var(--cyan);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.badge-danger {
+    background: rgba(255, 71, 87, 0.12);
+    color: var(--red);
+    border: 1px solid rgba(255, 71, 87, 0.2);
+}
+
+.badge-success {
+    background: rgba(46, 213, 115, 0.12);
+    color: var(--success);
+    border: 1px solid rgba(46, 213, 115, 0.2);
+}
+
+.badge-muted {
+    background: rgba(107, 114, 128, 0.12);
+    color: var(--color-muted);
+    border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.badge-warning {
+    background: rgba(255, 192, 69, 0.12);
+    color: var(--gold);
+    border: 1px solid rgba(255, 192, 69, 0.2);
+}
+
+/* ────────────────────────────────────────────
+   STAT CARDS — Genome Overview
+   ──────────────────────────────────────────── */
+.genome-summary-card {
+    margin-bottom: var(--space-lg);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+}
+
+.stat-card {
+    background: rgba(255, 146, 51, 0.04);
+    border: 1px solid rgba(255, 146, 51, 0.08);
+    border-radius: 12px;
+    padding: var(--space-lg);
+    text-align: center;
+    transition: all var(--transition-base);
+}
+
+.stat-card:hover {
+    background: rgba(255, 146, 51, 0.08);
+    border-color: rgba(255, 146, 51, 0.18);
+    transform: translateY(-2px);
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--orange), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--space-xs);
+    letter-spacing: -0.02em;
+}
+
+.stat-label {
+    font-size: 0.82rem;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+}
+
+/* ────────────────────────────────────────────
+   CULTIVAR CARDS
+   ──────────────────────────────────────────── */
+.cultivar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+
+.cultivar-card {
+    overflow: hidden;
+    padding: 0;
+}
+
+.cultivar-card:hover {
+    transform: translateY(-4px);
+}
+
+.cultivar-img {
+    height: 200px;
+    border-radius: var(--glass-radius) var(--glass-radius) 0 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.alphonso-img {
+    background: linear-gradient(135deg, #ff9233 0%, #ffb347 40%, #f5a623 100%);
+}
+
+.alphonso-img::after {
+    content: '🥭';
+    position: absolute;
+    font-size: 5rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.35;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+}
+
+.tommy-img {
+    background: linear-gradient(135deg, #e74c3c 0%, #f39c12 40%, #2ecc71 100%);
+}
+
+.tommy-img::after {
+    content: '🥭';
+    position: absolute;
+    font-size: 5rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.35;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+}
+
+.cultivar-info {
+    padding: var(--space-lg) var(--space-xl);
+}
+
+.cultivar-name {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: var(--space-xs);
+}
+
+.cultivar-origin {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    display: block;
+    margin-bottom: var(--space-md);
+}
+
+.cultivar-desc {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    margin-bottom: var(--space-md);
+}
+
+/* ────────────────────────────────────────────
+   DISEASE CARDS
+   ──────────────────────────────────────────── */
+.disease-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.disease-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--glass-radius);
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+    display: flex;
+    transition: all var(--transition-base);
+}
+
+.disease-card:hover {
+    border-color: var(--glass-border-hover);
+    transform: translateY(-3px);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+.disease-color-bar {
+    width: 4px;
+    flex-shrink: 0;
+}
+
+.bar-anthracnose { background: linear-gradient(to bottom, var(--red), #c0392b); }
+.bar-mildew { background: linear-gradient(to bottom, var(--gold), #e67e22); }
+.bar-canker { background: linear-gradient(to bottom, var(--cyan), #0984e3); }
+.bar-malformation { background: linear-gradient(to bottom, var(--green), #27ae60); }
+
+.disease-content {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.disease-name {
+    font-size: 1.02rem;
+    font-weight: 700;
+}
+
+.disease-pathogen {
+    font-size: 0.82rem;
+    color: var(--color-muted);
+    font-style: italic;
+}
+
+/* Severity Indicator */
+.severity-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin: var(--space-xs) 0;
+}
+
+.severity-dots {
+    display: flex;
+    gap: 3px;
+}
+
+.severity-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.severity-high .severity-dots span {
+    background: var(--red);
+}
+
+.severity-high .severity-dots span:last-child {
+    background: rgba(255, 71, 87, 0.3);
+}
+
+.severity-medium .severity-dots span {
+    background: var(--gold);
+}
+
+.severity-medium .severity-dots span:last-child {
+    background: rgba(255, 192, 69, 0.3);
+}
+
+.severity-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.severity-high .severity-label { color: var(--red); }
+.severity-medium .severity-label { color: var(--gold); }
+
+/* ────────────────────────────────────────────
+   MISSION CARD
+   ──────────────────────────────────────────── */
+.mission-card {
+    text-align: center;
+    padding: var(--space-2xl);
+    border: 1px solid rgba(255, 146, 51, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.mission-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(255, 146, 51, 0.04) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.mission-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-md);
+}
+
+.mission-text {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    max-width: 800px;
+    margin: var(--space-md) auto var(--space-lg);
+    color: var(--color-text);
+}
+
+.mission-pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    margin-top: var(--space-lg);
+}
+
+.pipeline-step {
+    background: rgba(255, 146, 51, 0.08);
+    border: 1px solid rgba(255, 146, 51, 0.15);
+    padding: 8px 20px;
+    border-radius: 24px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: all var(--transition-base);
+}
+
+.pipeline-step.active {
+    background: linear-gradient(135deg, var(--orange), var(--gold));
+    color: #0a0a0f;
+    font-weight: 700;
+    border-color: transparent;
+    box-shadow: 0 0 20px rgba(255, 146, 51, 0.3);
+}
+
+.pipeline-arrow {
+    color: var(--orange);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+/* ────────────────────────────────────────────
+   BUTTONS
+   ──────────────────────────────────────────── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+/* Primary Button — Orange gradient */
+.btn-primary {
+    background: linear-gradient(135deg, var(--orange), var(--gold));
+    color: #0a0a0f;
+    box-shadow: 0 4px 16px rgba(255, 146, 51, 0.25);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 6px 24px rgba(255, 146, 51, 0.45), 0 0 30px rgba(255, 146, 51, 0.15);
+    transform: translateY(-2px);
+}
+
+.btn-primary:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 8px rgba(255, 146, 51, 0.3);
+}
+
+/* Success Button — Green gradient */
+.btn-success {
+    background: linear-gradient(135deg, var(--success), #27ae60);
+    color: #0a0a0f;
+    box-shadow: 0 4px 16px rgba(46, 213, 115, 0.25);
+}
+
+.btn-success:hover {
+    box-shadow: 0 6px 24px rgba(46, 213, 115, 0.45);
+    transform: translateY(-1px);
+}
+
+/* Danger Button */
+.btn-danger {
+    background: linear-gradient(135deg, var(--red), #c0392b);
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(255, 71, 87, 0.25);
+}
+
+.btn-danger:hover {
+    box-shadow: 0 6px 24px rgba(255, 71, 87, 0.45);
+    transform: translateY(-1px);
+}
+
+/* Outline Button */
+.btn-outline {
+    background: transparent;
+    color: var(--orange);
+    border: 1px solid rgba(255, 146, 51, 0.3);
+}
+
+.btn-outline:hover {
+    background: rgba(255, 146, 51, 0.08);
+    border-color: var(--orange);
+}
+
+/* Button Sizes */
+.btn-sm {
+    font-size: 0.8rem;
+    padding: 6px 14px;
+    border-radius: 8px;
+}
+
+.btn-lg {
+    font-size: 1rem;
+    padding: 14px 32px;
+    border-radius: 12px;
+}
+
+/* Close button */
+.btn-close {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all var(--transition-fast);
+}
+
+.btn-close:hover {
+    background: rgba(255, 71, 87, 0.15);
+    border-color: var(--red);
+    color: var(--red);
+}
+
+/* View Gene Button */
+.view-gene-btn {
+    margin-top: auto;
+    align-self: flex-start;
+}
+
+/* ────────────────────────────────────────────
+   SEARCH BAR
+   ──────────────────────────────────────────── */
+.search-card {
+    margin-bottom: var(--space-lg);
+}
+
+.search-bar {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.search-input {
+    flex: 1;
+    background: rgba(10, 12, 16, 0.7);
+    border: 1px solid rgba(255, 146, 51, 0.12);
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: var(--color-heading);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    transition: all var(--transition-base);
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: var(--color-muted);
+}
+
+.search-input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(255, 146, 51, 0.12), 0 0 20px rgba(255, 146, 51, 0.08);
+}
+
+.search-btn {
+    flex-shrink: 0;
+}
+
+.search-icon {
+    font-size: 1.05em;
+}
+
+.search-meta {
+    margin-top: var(--space-md);
+}
+
+.results-count {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+}
+
+/* ────────────────────────────────────────────
+   GENE TABLE
+   ──────────────────────────────────────────── */
+.table-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.gene-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.87rem;
+}
+
+.gene-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.gene-table th {
+    background: rgba(15, 17, 24, 0.95);
+    color: var(--color-muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 146, 51, 0.1);
+    white-space: nowrap;
+}
+
+.gene-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    color: var(--color-text);
+    vertical-align: middle;
+}
+
+.gene-table tbody tr {
+    transition: background var(--transition-fast);
+}
+
+.gene-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.gene-table tbody tr:hover {
+    background: rgba(255, 146, 51, 0.06);
+}
+
+/* Highlighted candidate rows */
+.gene-table tbody tr.candidate-row {
+    background: rgba(255, 146, 51, 0.05);
+    border-left: 3px solid var(--orange);
+}
+
+.gene-table tbody tr.candidate-row:hover {
+    background: rgba(255, 146, 51, 0.1);
+}
+
+/* Monospace columns for coordinates */
+.gene-table td:nth-child(4),
+.gene-table td:nth-child(5),
+.gene-table td:nth-child(7) {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--color-muted);
+}
+
+.empty-row td {
+    padding: var(--space-2xl);
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--color-muted);
+}
+
+.empty-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: var(--space-sm);
+    opacity: 0.5;
+}
+
+/* Candidate Table */
+.candidate-table tbody tr {
+    background: rgba(255, 146, 51, 0.03);
+    border-left: 3px solid var(--orange);
+}
+
+.candidate-table tbody tr:hover {
+    background: rgba(255, 146, 51, 0.08);
+}
+
+/* ────────────────────────────────────────────
+   PAGINATION
+   ──────────────────────────────────────────── */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.page-info {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    min-width: 80px;
+    text-align: center;
+}
+
+/* ────────────────────────────────────────────
+   GWAS LAB
+   ──────────────────────────────────────────── */
+.gwas-controls-card {
+    margin-bottom: var(--space-lg);
+}
+
+.gwas-controls {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-xl);
+    flex-wrap: wrap;
+}
+
+.trait-selector {
+    width: 100%;
+}
+
+.trait-category {
+    margin-bottom: var(--space-md);
+}
+
+.trait-cat-title {
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    margin-top: 12px;
+}
+
+.control-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--space-md);
+    border-bottom: 1px solid rgba(255, 146, 51, 0.2);
+    padding-bottom: 6px;
+}
+
+.trait-buttons {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+.trait-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px 20px;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.trait-btn:hover {
+    background: rgba(255, 146, 51, 0.08);
+    border-color: rgba(255, 146, 51, 0.2);
+}
+
+.trait-btn.active {
+    background: rgba(255, 146, 51, 0.12);
+    border-color: var(--orange);
+    color: var(--orange);
+    box-shadow: 0 0 12px rgba(255, 146, 51, 0.15);
+}
+
+/* GWAS Run Button */
+.btn-gwas-run {
+    min-width: 220px;
+}
+
+/* ────────────────────────────────────────────
+   PLOT CARDS — Manhattan & QQ
+   ──────────────────────────────────────────── */
+.plot-card {
+    margin-bottom: var(--space-lg);
+    padding: var(--space-lg);
+}
+
+.canvas-container {
+    position: relative;
+    background: rgba(6, 8, 12, 0.5);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+#manhattan-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+#qq-canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.qq-plot-card {
+    max-width: 520px;
+}
+
+.qq-container {
+    display: flex;
+    justify-content: center;
+}
+
+.plot-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-muted);
+    background: rgba(10, 10, 15, 0.5);
+}
+
+.placeholder-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-sm);
+    opacity: 0.4;
+}
+
+.plot-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+.plot-legend {
+    display: flex;
+    gap: var(--space-lg);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--color-muted);
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.threshold-label {
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+}
+
+/* ────────────────────────────────────────────
+   SNP DETAIL PANEL
+   ──────────────────────────────────────────── */
+.snp-detail-panel {
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    animation: slideIn 0.35s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.snp-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.snp-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.snp-label {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+}
+
+.snp-value {
+    font-size: 1rem;
+    color: var(--color-heading);
+    font-weight: 600;
+}
+
+/* ────────────────────────────────────────────
+   CRISPR STUDIO
+   ──────────────────────────────────────────── */
+.crispr-step-card {
+    position: relative;
+    margin-bottom: var(--space-lg);
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.step-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), var(--gold));
+    color: #0a0a0f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+/* Gene Select Grid */
+.gene-select-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.gene-select-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: var(--space-lg);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    font-family: var(--font-body);
+    color: var(--color-text);
+}
+
+.gene-select-card:hover {
+    background: rgba(255, 146, 51, 0.06);
+    border-color: rgba(255, 146, 51, 0.2);
+    transform: translateY(-2px);
+}
+
+.gene-select-card.selected {
+    background: rgba(255, 146, 51, 0.1);
+    border-color: var(--orange);
+    box-shadow: 0 0 20px rgba(255, 146, 51, 0.15);
+}
+
+.gene-card-icon {
+    font-size: 2rem;
+    margin-bottom: var(--space-xs);
+}
+
+.gene-card-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.gene-card-id {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-muted);
+}
+
+/* Gene Info Panel */
+.gene-info-panel {
+    background: rgba(0, 212, 255, 0.04);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: 12px;
+    padding: var(--space-lg);
+    animation: fadeIn 0.3s ease;
+}
+
+.gene-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-md);
+}
+
+.gene-info-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.info-label {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    color: var(--color-heading);
+    font-weight: 500;
+}
+
+/* ────────────────────────────────────────────
+   SEQUENCE DISPLAYS
+   ──────────────────────────────────────────── */
+.sequence-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.sequence-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.sequence-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.label-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot-danger { background: var(--red); }
+.dot-success { background: var(--success); }
+.dot-info { background: var(--cyan); }
+
+.sequence-display {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.8;
+    background: #0a0c10;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    padding: var(--space-md) var(--space-lg);
+    overflow-x: auto;
+    color: var(--color-text);
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Nucleotide coloring via classes */
+.nt-a { color: var(--nt-a); }
+.nt-t { color: var(--nt-t); }
+.nt-g { color: var(--nt-g); }
+.nt-c { color: var(--nt-c); }
+
+/* Mutation highlight */
+.mutation-highlight {
+    background: rgba(255, 71, 87, 0.25);
+    border-bottom: 2px solid var(--red);
+    padding: 1px 2px;
+    border-radius: 2px;
+}
+
+.diff-display .mutation-highlight {
+    background: rgba(255, 146, 51, 0.2);
+    border-bottom-color: var(--orange);
+}
+
+/* ────────────────────────────────────────────
+   GUIDE RNA DESIGN
+   ──────────────────────────────────────────── */
+.grna-controls {
+    margin-bottom: var(--space-lg);
+}
+
+.pam-sites-list {
+    margin-bottom: var(--space-lg);
+    animation: fadeIn 0.3s ease;
+}
+
+.pam-sites-list h4 {
+    margin-bottom: var(--space-md);
+}
+
+.pam-sites-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-sm);
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.pam-site-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: var(--space-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.pam-site-card:hover {
+    background: rgba(255, 146, 51, 0.06);
+    border-color: rgba(255, 146, 51, 0.2);
+}
+
+.pam-site-card.selected {
+    background: rgba(255, 146, 51, 0.1);
+    border-color: var(--orange);
+}
+
+.pam-radio {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.pam-site-card.selected .pam-radio {
+    border-color: var(--orange);
+}
+
+.pam-site-card.selected .pam-radio::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--orange);
+}
+
+.pam-sequence {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--color-heading);
+    word-break: break-all;
+}
+
+.pam-position {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.grna-manual-input {
+    margin-bottom: var(--space-lg);
+}
+
+.grna-input-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.grna-input {
+    flex: 1;
+    max-width: 420px;
+    background: rgba(10, 12, 16, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 12px 18px;
+    color: var(--color-heading);
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    letter-spacing: 0.12em;
+    transition: all var(--transition-base);
+    outline: none;
+}
+
+.grna-input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(255, 146, 51, 0.12);
+}
+
+.grna-length {
+    font-size: 0.82rem;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+}
+
+/* ────────────────────────────────────────────
+   CRISPR RESULTS
+   ──────────────────────────────────────────── */
+.results-card {
+    animation: fadeIn 0.5s ease;
+}
+
+.simulation-log-section,
+.alignment-section,
+.repaired-section {
+    margin-bottom: var(--space-lg);
+}
+
+.simulation-log-section h4,
+.alignment-section h4,
+.repaired-section h4 {
+    margin-bottom: var(--space-sm);
+    font-size: 0.95rem;
+}
+
+.simulation-log {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.9;
+    background: #0a0c10;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    padding: var(--space-lg);
+    color: var(--color-text);
+    max-height: 280px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+/* Colored log lines */
+.log-step { color: var(--orange); }
+.log-success { color: var(--success); }
+.log-info { color: var(--cyan); }
+.log-warning { color: var(--gold); }
+.log-error { color: var(--red); }
+
+.alignment-display {
+    font-size: 0.78rem;
+    line-height: 2;
+}
+
+.repaired-display {
+    border: 1px solid rgba(46, 213, 115, 0.15);
+}
+
+/* Status Indicator */
+.crispr-status {
+    margin-bottom: var(--space-lg);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-muted);
+    flex-shrink: 0;
+}
+
+.status-indicator.success .status-dot {
+    background: var(--success);
+    box-shadow: 0 0 10px rgba(46, 213, 115, 0.5);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status-indicator.failure .status-dot {
+    background: var(--red);
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+}
+
+.status-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.status-indicator.success .status-text { color: var(--success); }
+.status-indicator.failure .status-text { color: var(--red); }
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.2);
+    }
+}
+
+/* ────────────────────────────────────────────
+   LOADING SPINNER
+   ──────────────────────────────────────────── */
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(10, 10, 15, 0.3);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+
+.btn-success .spinner {
+    border-color: rgba(10, 10, 15, 0.3);
+    border-top-color: #0a0a0f;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ────────────────────────────────────────────
+   TOOLTIPS
+   ──────────────────────────────────────────── */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: rgba(15, 17, 24, 0.95);
+    color: var(--color-text);
+    font-size: 0.78rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 146, 51, 0.15);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-fast);
+    z-index: 100;
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-8px);
+}
+
+/* ────────────────────────────────────────────
+   FOOTER
+   ──────────────────────────────────────────── */
+.site-footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(255, 146, 51, 0.08);
+    margin-top: var(--space-2xl);
+}
+
+.footer-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: var(--space-xl) var(--space-xl);
+    text-align: center;
+}
+
+.footer-title {
+    font-size: 0.88rem;
+    color: var(--color-muted);
+    font-weight: 500;
+    margin-bottom: var(--space-xs);
+}
+
+.footer-meta {
+    font-size: 0.78rem;
+    color: rgba(107, 114, 128, 0.7);
+}
+
+/* ────────────────────────────────────────────
+   RESPONSIVE — Tablet (≤ 1024px)
+   ──────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .navbar-inner {
+        flex-direction: column;
+        height: auto;
+        padding: var(--space-md) var(--space-lg);
+        gap: var(--space-sm);
+    }
+
+    .navbar {
+        height: auto;
+        position: sticky;
+    }
+
+    :root {
+        --navbar-height: 0px;
+    }
+
+    .tab-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cultivar-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .disease-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .gene-select-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .gwas-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .trait-buttons {
+        flex-direction: column;
+    }
+
+    .snp-details-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .plot-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .plot-legend {
+        flex-wrap: wrap;
+    }
+}
+
+/* ────────────────────────────────────────────
+   RESPONSIVE — Mobile (≤ 640px)
+   ──────────────────────────────────────────── */
+@media (max-width: 640px) {
+    body {
+        font-size: 14px;
+    }
+
+    .main-content {
+        padding-left: var(--space-md);
+        padding-right: var(--space-md);
+    }
+
+    .glass-card {
+        padding: var(--space-md) var(--space-lg);
+        border-radius: 12px;
+    }
+
+    .logo-subtitle {
+        display: none;
+    }
+
+    .tab-btn {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+
+    .tab-btn .tab-icon {
+        display: none;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+
+    .disease-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .disease-card {
+        flex-direction: row;
+    }
+
+    .gene-select-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gene-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .grna-input-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .grna-input {
+        max-width: 100%;
+    }
+
+    .mission-pipeline {
+        flex-direction: column;
+    }
+
+    .pipeline-arrow {
+        transform: rotate(90deg);
+    }
+
+    .snp-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pam-sites-container {
+        grid-template-columns: 1fr;
+    }
+
+    h2 {
+        font-size: 1.35rem;
+    }
+
+    .btn-lg {
+        width: 100%;
+    }
+
+    .search-bar {
+        flex-direction: column;
+    }
+
+    .cultivar-name {
+        font-size: 1.2rem;
+    }
+}
+
+/* ────────────────────────────────────────────
+   UTILITY CLASSES
+   ──────────────────────────────────────────── */
+.hidden {
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: var(--color-muted);
+}
+
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+
+/* ────────────────────────────────────────────
+   SELECTION HIGHLIGHT
+   ──────────────────────────────────────────── */
+::selection {
+    background: rgba(255, 146, 51, 0.3);
+    color: #ffffff;
+}
+
+/* ────────────────────────────────────────────
+   FOCUS MANAGEMENT
+   ──────────────────────────────────────────── */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+/* ────────────────────────────────────────────
+   AMBIENT GLOW EFFECTS
+   ──────────────────────────────────────────── */
+.genome-summary-card::after {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 146, 51, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+.genome-summary-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.mission-card::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: -60px;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle, rgba(78, 159, 61, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+/* ────────────────────────────────────────────
+   ANIMATION UTILITIES
+   ──────────────────────────────────────────── */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.shimmer {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.02) 0%,
+        rgba(255, 255, 255, 0.06) 50%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Stagger card entrance */
+.disease-card:nth-child(1) { animation-delay: 0s; }
+.disease-card:nth-child(2) { animation-delay: 0.05s; }
+.disease-card:nth-child(3) { animation-delay: 0.1s; }
+.disease-card:nth-child(4) { animation-delay: 0.15s; }
+
+.disease-card {
+    animation: fadeIn 0.4s ease backwards;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0s; }
+.stat-card:nth-child(2) { animation-delay: 0.05s; }
+.stat-card:nth-child(3) { animation-delay: 0.1s; }
+.stat-card:nth-child(4) { animation-delay: 0.15s; }
+
+.stat-card {
+    animation: fadeIn 0.4s ease backwards;
+}
+
+/* ────────────────────────────────────────────
+   DARK INPUT STYLES (global)
+   ──────────────────────────────────────────── */
+input, select, textarea {
+    color: var(--color-heading);
+    font-family: var(--font-body);
+}
+
+select {
+    background: rgba(10, 12, 16, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px 16px;
+    color: var(--color-heading);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color var(--transition-base);
+    outline: none;
+    appearance: none;
+}
+
+select:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(255, 146, 51, 0.12);
+}
+
+/* ────────────────────────────────────────────
+   PRINT STYLES
+   ──────────────────────────────────────────── */
+@media print {
+    .navbar,
+    .tab-nav,
+    .site-footer {
+        display: none;
+    }
+
+    body {
+        background: white;
+        color: #1a1a1a;
+    }
+
+    .glass-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+
+    .gradient-text {
+        -webkit-text-fill-color: #1a1a1a;
+        background: none;
+    }
+}
+
+/* ════════════════════════════════════════════════════════════
+   EXPANDED STYLES — 12-Cultivar Panel, 6 Traits, Real NCBI DB
+   ════════════════════════════════════════════════════════════ */
+
+/* 6-column stats grid */
+.stats-grid {
+    grid-template-columns: repeat(6, 1fr) !important;
+}
+
+/* 6-column disease grid (3 per row) */
+.disease-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* New disease color bars */
+.bar-fruitrot { background: linear-gradient(to bottom, #f97316, #ea580c); }
+.bar-stemend  { background: linear-gradient(to bottom, #8b5cf6, #7c3aed); }
+
+/* GWAS trait buttons — 3 per row (6 total) */
+.trait-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.trait-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #94a3b8;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-align: center;
+}
+
+.trait-btn:hover {
+    background: rgba(255,146,51,0.08);
+    border-color: rgba(255,146,51,0.25);
+    color: var(--orange);
+}
+
+.trait-btn.active {
+    background: linear-gradient(135deg, rgba(255,146,51,0.18), rgba(255,192,69,0.15));
+    border-color: rgba(255,146,51,0.45);
+    color: var(--gold);
+    font-weight: 700;
+    box-shadow: 0 0 16px rgba(255,146,51,0.12);
+}
+
+/* Cultivar AF chart card */
+.cultivar-af-card { animation: fadeIn 0.4s ease; }
+
+/* GWAS controls vertical layout */
+.gwas-controls { display: flex; flex-direction: column; gap: 16px; }
+
+/* Gene select grid — 3 per row (6 total) */
+.gene-select-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+/* NCBI badge navbar */
+.ncbi-badge { margin-left: auto; }
+
+/* Responsive adjustments */
+@media (max-width: 1100px) {
+    .stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    .disease-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .trait-buttons { grid-template-columns: repeat(2, 1fr); }
+    .gene-select-grid { grid-template-columns: repeat(2, 1fr); }
+    .ncbi-badge { display: none; }
+}
+
+@media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .disease-grid { grid-template-columns: 1fr !important; }
+    .trait-buttons { grid-template-columns: 1fr; }
+    .gene-select-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Enforce scrollable container for the 161 cultivar comparison chart */
+.af-chart-container {
+    width: 100%;
+    max-height: 480px !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px;
+    background: rgba(10, 15, 30, 0.6);
+}
+
+/* ════════════════════════════════════════════════════════════
+   PREMIUM UI ENHANCEMENTS
+   ════════════════════════════════════════════════════════════ */
+
+/* Animated section divider */
+.section-divider {
+    width: 100%;
+    height: 2px;
+    margin-top: 16px;
+    background: linear-gradient(90deg, transparent, var(--orange), var(--gold), transparent);
+    background-size: 200% 100%;
+    animation: dividerShimmer 4s ease-in-out infinite;
+    border-radius: 2px;
+    opacity: 0.5;
+}
+
+@keyframes dividerShimmer {
+    0%, 100% { background-position: -200% 0; }
+    50% { background-position: 200% 0; }
+}
+
+/* Enhanced gradient text with animation */
+.section-heading .gradient-text {
+    position: relative;
+    display: inline-block;
+}
+
+.section-heading .gradient-text::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--orange), var(--gold));
+    transition: width 0.5s ease;
+    border-radius: 2px;
+}
+
+.section-heading:hover .gradient-text::after {
+    width: 100%;
+}
+
+/* GWAS Run Button — Enhanced with glow animation */
+.btn-gwas-run {
+    min-width: 220px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-gwas-run::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.btn-gwas-run:hover::after {
+    opacity: 1;
+    animation: buttonPulse 2s ease-in-out infinite;
+}
+
+@keyframes buttonPulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Enhanced trait buttons with active glow */
+.trait-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.trait-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 146, 51, 0.05),
+        transparent
+    );
+    transition: left 0.4s ease;
+    pointer-events: none;
+}
+
+.trait-btn:hover::before {
+    left: 100%;
+}
+
+.trait-btn.active {
+    animation: traitGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes traitGlow {
+    0% { box-shadow: 0 0 12px rgba(255, 146, 51, 0.12); }
+    100% { box-shadow: 0 0 20px rgba(255, 146, 51, 0.25); }
+}
+
+/* Enhanced disease cards with gradient top border */
+.disease-card {
+    position: relative;
+}
+
+.disease-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 146, 51, 0.3), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.disease-card:hover::after {
+    opacity: 1;
+}
+
+/* Stat card shine on hover */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(255, 146, 51, 0.06) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.stat-card:hover::before {
+    opacity: 1;
+}
+
+/* Scroll reveal animation */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Enhanced plot card */
+.plot-card {
+    border: 1px solid rgba(255, 146, 51, 0.06);
+    transition: all 0.4s ease;
+}
+
+.plot-card:hover {
+    border-color: rgba(255, 146, 51, 0.15);
+    box-shadow: var(--glass-shadow-hover), 0 0 60px rgba(255, 146, 51, 0.03);
+}
+
+/* Enhanced Manhattan plot canvas container */
+.canvas-container {
+    position: relative;
+    background: rgba(6, 8, 12, 0.6);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.4), inset 0 -1px 0 rgba(255, 146, 51, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Premium floating label for Top Locus badge */
+#gwas-top-gene-container {
+    animation: fadeInSlide 0.5s ease;
+}
+
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Enhanced SNP detail panel */
+.snp-detail-panel {
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    animation: slideIn 0.35s ease;
+    position: relative;
+}
+
+.snp-detail-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.5), transparent);
+}
+
+/* Enhanced cultivar AF card */
+.cultivar-af-card {
+    animation: fadeIn 0.4s ease;
+    border: 1px solid rgba(255, 146, 51, 0.08);
+}
+
+.cultivar-af-card:hover {
+    border-color: rgba(255, 146, 51, 0.18);
+}
+
+/* Mission pipeline step hover animation */
+.pipeline-step {
+    transition: all 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pipeline-step:hover:not(.active) {
+    background: rgba(255, 146, 51, 0.12);
+    border-color: rgba(255, 146, 51, 0.25);
+    transform: translateY(-2px);
+}
+
+/* Gene select card enhanced active state */
+.gene-select-card.selected {
+    position: relative;
+}
+
+.gene-select-card.selected::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, var(--orange), var(--gold));
+    z-index: -1;
+    opacity: 0.3;
+    animation: borderPulse 2s ease-in-out infinite;
+}
+
+@keyframes borderPulse {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.4; }
+}
+
+/* Enhanced notification toast */
+.toast-notification {
+    animation: toastSlideIn 0.4s cubic-bezier(.23, 1, .32, 1);
+}
+
+@keyframes toastSlideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Keyboard shortcut hints */
+.kbd-hint {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    margin-left: 8px;
+}
+
+/* Enhanced footer */
+.site-footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(255, 146, 51, 0.08);
+    margin-top: var(--space-2xl);
+    background: rgba(10, 10, 15, 0.5);
+    backdrop-filter: blur(12px);
+}
+
+/* Smooth focus transitions for all interactive elements */
+button, input, select, textarea, a {
+    transition: all 0.2s ease;
+}
+
+/* Improved search input with icon animation */
+.search-input:focus + .search-btn {
+    box-shadow: 0 0 16px rgba(255, 146, 51, 0.25);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SIDEBAR NAVIGATION LAYOUT (DESKTOP)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 1025px) {
+    :root {
+        --sidebar-width: 290px;
+    }
+    
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: auto;
+        width: var(--sidebar-width);
+        height: 100vh;
+        border-right: 1px solid rgba(255, 146, 51, 0.1);
+        border-bottom: none;
+        background: rgba(10, 10, 15, 0.9);
+        box-shadow: 4px 0 30px rgba(0, 0, 0, 0.45);
+        overflow-y: auto;
+    }
+
+    .navbar-inner {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        height: auto;
+        min-height: 100%;
+        padding: var(--space-xl) var(--space-md);
+        gap: var(--space-xl);
+    }
+
+    .logo-area {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: var(--space-sm);
+    }
+
+    .logo-title {
+        font-size: 1.45rem;
+    }
+
+    .logo-subtitle {
+        text-align: center;
+        margin-top: 4px;
+        line-height: 1.4;
+    }
+
+    .ncbi-badge {
+        margin-left: 0;
+        justify-content: center;
+        width: 100%;
+        padding: 8px 12px;
+        background: rgba(255, 146, 51, 0.03);
+        border: 1px solid rgba(255, 146, 51, 0.08);
+        border-radius: 8px;
+    }
+
+    .sidebar-group-title {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--color-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 16px 16px 6px;
+        opacity: 0.8;
+    }
+
+    .tab-nav {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-xs);
+        overflow: visible;
+        width: 100%;
+        padding-bottom: 0;
+    }
+
+    .tab-btn {
+        width: 100%;
+        text-align: left;
+        padding: 12px 16px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.92rem;
+    }
+
+    .tab-btn .tab-icon {
+        font-size: 1.1em;
+        margin-right: 0;
+    }
+
+    .tab-btn::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 15%;
+        bottom: 15%;
+        right: auto;
+        transform: scaleY(0);
+        transform-origin: center;
+        width: 3px;
+        height: 70%;
+        background: linear-gradient(to bottom, var(--orange), var(--gold));
+        border-radius: 0 4px 4px 0;
+        transition: transform var(--transition-base);
+    }
+
+    .tab-btn.active {
+        background: rgba(255, 146, 51, 0.06);
+        color: var(--orange);
+    }
+
+    .tab-btn.active::after {
+        transform: scaleY(1);
+    }
+
+    .main-content {
+        margin-left: var(--sidebar-width);
+        padding: var(--space-xl) var(--space-xl) var(--space-2xl);
+        max-width: calc(100% - var(--sidebar-width));
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GENETIC PEDIGREE TREE STYLES
+   ═══════════════════════════════════════════════════════════ */
+.pedigree-tree-container {
+    user-select: none;
+    box-shadow: inset 0 4px 30px rgba(0, 0, 0, 0.4);
+}
+
+.pedigree-node-card {
+    position: absolute;
+    width: 200px;
+    padding: 12px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    font-family: 'Inter', sans-serif;
+    transform: translate(-50%, -50%);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.pedigree-node-card:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+    border-color: #14b8a6;
+    box-shadow: 0 15px 30px rgba(20, 184, 166, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.15);
+}
+
+.pedigree-node-card.node-hybrid {
+    border-color: #a855f7;
+}
+.pedigree-node-card.node-hybrid:hover {
+    border-color: #c084fc;
+    box-shadow: 0 15px 30px rgba(168, 85, 247, 0.25);
+}
+
+.pedigree-node-card.node-highlight {
+    border-color: #fbbf24;
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+.pedigree-node-header {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pedigree-node-type {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 8px;
+    letter-spacing: 0.03em;
+}
+
+.pedigree-node-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 8px;
+    font-size: 0.76rem;
+}
+
+.pedigree-node-metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pedigree-node-metric-val {
+    font-family: 'Fira Code', monospace;
+    font-weight: 600;
+    color: #14b8a6;
+}
+
+.pedigree-tree-line {
+    stroke: rgba(20, 184, 166, 0.3);
+    stroke-width: 2.5px;
+    fill: none;
+    stroke-dasharray: 5, 5;
+    animation: pedigreeDash 40s linear infinite;
+}
+
+.pedigree-tree-line.line-hybrid {
+    stroke: rgba(168, 85, 247, 0.4);
+}
+
+@keyframes pedigreeDash {
+    to {
+        stroke-dashoffset: -1000;
+    }
+}
+
+.pedigree-tree-marker {
+    fill: rgba(20, 184, 166, 0.3);
+}
+.pedigree-tree-marker.marker-hybrid {
+    fill: rgba(168, 85, 247, 0.4);
+}
+
+

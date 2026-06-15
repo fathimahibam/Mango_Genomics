@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MangoGenomics Lab — A premium bioinformatics research platform using REAL NCBI annotated Mangifera indica genome data for GWAS analysis across 12 cultivars and CRISPR gene editing simulation.">
+    <title>MangoGenomics Lab — NCBI Real Genome · 12-Cultivar GWAS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <!-- Ambient Particle Background -->
+    <canvas id="particle-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;"></canvas>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         NAVBAR / HEADER
+    ═══════════════════════════════════════════════════════════════ -->
+    <header class="navbar" id="navbar">
+        <div class="navbar-inner">
+            <div class="logo-area">
+                <span class="logo-icon">🧬</span>
+                <div class="logo-text">
+                    <h1 class="logo-title">MangoGenomics Lab</h1>
+                    <span class="logo-subtitle">NCBI Real Genome · 12-Cultivar GWAS · CRISPR Studio</span>
+                </div>
+            </div>
+            <div class="ncbi-badge">
+                <span class="ncbi-dot"></span>
+                <span>NCBI GCF_011075055.1 · 35,754 Genes</span>
+            </div>
+            <nav class="tab-nav" id="tab-nav" role="tablist">
+                <div class="sidebar-group-title">Core Data-Driven Modules</div>
+                <button class="tab-btn active" id="tab-dashboard" data-section="section-dashboard" role="tab" aria-selected="true">
+                    <span class="tab-icon">📊</span> Genome Dashboard
+                </button>
+                <button class="tab-btn" id="tab-gwas" data-section="section-gwas" role="tab" aria-selected="false">
+                    <span class="tab-icon">🧪</span> GWAS Lab
+                </button>
+                <button class="tab-btn" id="tab-prediction" data-section="section-prediction" role="tab" aria-selected="false">
+                    <span class="tab-icon">🔮</span> Genomic Prediction
+                </button>
+                <button class="tab-btn" id="tab-validation" data-section="section-validation" role="tab" aria-selected="false">
+                    <span class="tab-icon">🎯</span> Holdout Validation
+                </button>
+                <button class="tab-btn" id="tab-pedigree" data-section="section-pedigree" role="tab" aria-selected="false">
+                    <span class="tab-icon">🌳</span> Genetic Pedigree
+                </button>
+                <button class="tab-btn" id="tab-pca" data-section="section-pca" role="tab" aria-selected="false">
+                    <span class="tab-icon">🧬</span> Population Structure
+                </button>
+                <button class="tab-btn" id="tab-breeder" data-section="section-breeder" role="tab" aria-selected="false">
+                    <span class="tab-icon">🌾</span> Breeder Recommendations
+                </button>
+                <button class="tab-btn" id="tab-new-cultivar" data-section="section-new-cultivar" role="tab" aria-selected="false">
+                    <span class="tab-icon">🌱</span> Predict New Cultivar
+                </button>
+
+                <div class="sidebar-group-title">Knowledge-Based Modules</div>
+                <button class="tab-btn" id="tab-disease-kb" data-section="section-disease-kb" role="tab" aria-selected="false">
+                    <span class="tab-icon">📚</span> Disease Knowledge Base
+                </button>
+                <button class="tab-btn" id="tab-explorer" data-section="section-explorer" role="tab" aria-selected="false">
+                    <span class="tab-icon">🔍</span> Gene Explorer
+                </button>
+                <button class="tab-btn" id="tab-crispr" data-section="section-crispr" role="tab" aria-selected="false">
+                    <span class="tab-icon">✂️</span> Gene Editing Explorer
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-content" id="main-content">
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION 1: DASHBOARD
+        ═══════════════════════════════════════════════════════════ -->
+        <section class="content-section" id="section-dashboard" role="tabpanel">
+
+            <!-- Genome Summary Card (REAL NCBI DATA) -->
+            <div class="glass-card genome-summary-card">
+                <div class="card-header">
+                    <h2 class="gradient-text">Real NCBI Genome Overview</h2>
+                    <span class="badge badge-info">Mangifera indica · GCF_011075055.1</span>
+                </div>
+                <div class="ncbi-source-banner">
+                    <span class="ncbi-icon">🏛️</span>
+                    <span><strong>Source:</strong> NCBI RefSeq GCF_011075055.1 (CATAS_Mindica_2.1) · Annotation Release 100 · Real annotated genome</span>
+                </div>
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" id="stat-total-genes">—</span>
+                        <span class="stat-label">Real Genes</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="stat-total-cds">—</span>
+                        <span class="stat-label">Total CDS</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="stat-chromosomes">—</span>
+                        <span class="stat-label">Chromosomes</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="stat-pseudogenes">—</span>
+                        <span class="stat-label">Pseudogenes</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="stat-mrna">—</span>
+                        <span class="stat-label">mRNA Transcripts</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="stat-cultivars">12</span>
+                        <span class="stat-label">Cultivars in GWAS</span>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Mission Statement -->
+            <div class="glass-card mission-card">
+                <div class="mission-icon">🎯</div>
+                <h3 class="gradient-text">Research Mission</h3>
+                <p class="mission-text">Use GWAS across 12 global cultivars to identify resistance loci with maximum statistical power. Apply CRISPR-Cas9 gene editing to transfer disease resistance into Alphonso — preserving its superior taste while eliminating vulnerability. All analysis grounded in the real NCBI annotated M. indica genome.</p>
+                <div class="mission-pipeline">
+                    <span class="pipeline-step">12-Cultivar Panel</span>
+                    <span class="pipeline-arrow">→</span>
+                    <span class="pipeline-step">GWAS Analysis</span>
+                    <span class="pipeline-arrow">→</span>
+                    <span class="pipeline-step">Loci Identification</span>
+                    <span class="pipeline-arrow">→</span>
+                    <span class="pipeline-step">CRISPR Editing</span>
+                    <span class="pipeline-arrow">→</span>
+                    <span class="pipeline-step active">Resistant Alphonso</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION: DISEASE KNOWLEDGE BASE (LITERATURE CURATED REFERENCE)
+        ═══════════════════════════════════════════════════════════ -->
+        <section class="content-section" id="section-disease-kb" style="display:none" role="tabpanel">
+            <div class="section-heading">
+                <h2 class="gradient-text">Disease Knowledge Base</h2>
+                <span class="badge badge-warning" style="margin-top: 8px; display: inline-block; font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; font-weight: bold; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); color: #fbbf24;">📚 Literature-Curated Database Reference</span>
+                <p class="section-desc" style="margin-top: 12px;">This database contains established literature-curated facts and phenotypic profiles for major global diseases and 12 historical reference cultivars. These records serve as baseline scientific indicators rather than dynamically generated calculations.</p>
+                <div class="section-divider"></div>
+            </div>
+
+            <!-- 12-Cultivar Grid with Disease Resistance Heatmap -->
+            <div class="section-heading" style="margin-top: 24px;">
+                <h3 class="gradient-text" style="font-size: 1.5rem;">12-Cultivar Phenotypic Panels</h3>
+                <p class="section-desc">Historical profiles of reference mango varieties from India, Pakistan, USA, and Mexico, detailing relative field resistance ratings across major diseases.</p>
+            </div>
+            <div class="cultivar-heatmap-card glass-card">
+                <div class="heatmap-header">
+                    <span class="heatmap-legend-item"><span class="heatmap-dot heatmap-dot-high"></span>High Susceptibility</span>
+                    <span class="heatmap-legend-item"><span class="heatmap-dot heatmap-dot-mod"></span>Moderate</span>
+                    <span class="heatmap-legend-item"><span class="heatmap-dot heatmap-dot-low"></span>Resistant</span>
+                </div>
+                <div class="cultivar-heatmap-table-wrap">
+                    <table class="cultivar-heatmap-table" id="cultivar-heatmap-table">
+                        <thead>
+                            <tr>
+                                <th class="cultivar-col">Cultivar</th>
+                                <th class="origin-col">Origin</th>
+                                <th>🦠 Anthracnose</th>
+                                <th>🍃 Powdery Mildew</th>
+                                <th>🔴 Bacterial Canker</th>
+                                <th>🌿 Malformation</th>
+                                <th>🍑 Fruit Rot</th>
+                                <th>🌿 Stem-End Rot</th>
+                                <th class="score-col">Resistance Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cultivar-heatmap-body">
+                            <!-- Loaded dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Disease Overview Grid -->
+            <div class="section-heading" style="margin-top: 40px;">
+                <h3 class="gradient-text" style="font-size: 1.5rem;">Pathogen & Threat Overview</h3>
+                <p class="section-desc">Key global fungal and bacterial threats with associated target genes identified in scientific literature.</p>
+            </div>
+            <div class="disease-grid" id="disease-grid">
+                <div class="disease-card" data-disease="anthracnose">
+                    <div class="disease-color-bar bar-anthracnose"></div>
+                    <div class="disease-content">
+                        <h4 class="disease-name">Anthracnose</h4>
+                        <p class="disease-pathogen"><em>Colletotrichum gloeosporioides</em></p>
+                        <div class="severity-indicator severity-high">
+                            <span class="severity-dots"><span></span><span></span><span></span><span></span><span></span></span>
+                            <span class="severity-label">Critical</span>
+                        </div>
+                        <button class="btn btn-outline btn-sm view-gene-btn" data-disease="anthracnose">View Gene →</button>
+                    </div>
+                </div>
+                <div class="disease-card" data-disease="powdery-mildew">
+                    <div class="disease-color-bar bar-mildew"></div>
+                    <div class="disease-content">
+                        <h4 class="disease-name">Powdery Mildew</h4>
+                        <p class="disease-pathogen"><em>Oidium mangiferae</em></p>
+                        <div class="severity-indicator severity-high">
+                            <span class="severity-dots"><span></span><span></span><span></span><span></span></span>
+                            <span class="severity-label">High</span>
+                        </div>
+                        <button class="btn btn-outline btn-sm view-gene-btn" data-disease="powdery-mildew">View Gene →</button>
+                    </div>
+                </div>
+                <div class="disease-card" data-disease="bacterial-canker">
+                    <div class="disease-color-bar bar-canker"></div>
+                    <div class="disease-content">
+                        <h4 class="disease-name">Bacterial Canker</h4>
+                        <p class="disease-pathogen"><em>Xanthomonas citri pv. mangiferaeindicae</em></p>
+                        <div class="severity-indicator severity-medium">
+                            <span class="severity-dots"><span></span><span></span><span></span></span>
+                            <span class="severity-label">Moderate</span>
+                        </div>
+                        <button class="btn btn-outline btn-sm view-gene-btn" data-disease="bacterial-canker">View Gene →</button>
+                    </div>
+                </div>
+                <div class="disease-card" data-disease="malformation">
+                    <div class="disease-color-bar bar-malformation"></div>
+                    <div class="disease-content">
+                        <h4 class="disease-name">Mango Malformation</h4>
+                        <p class="disease-pathogen"><em>Fusarium mangiferae</em></p>
+                        <div class="severity-indicator severity-medium">
+                            <span class="severity-dots"><span></span><span></span><span></span></span>
+                            <span class="severity-label">Moderate</span>
+                        </div>
+                        <button class="btn btn-outline btn-sm view-gene-btn" data-disease="malformation">View Gene →</button>
+                    </div>
+                </div>
+                <div class="disease-card" data-disease="fruit-rot">
+                    <div class="disease-color-bar bar-fruitrot"></div>
+                    <div class="disease-content">
+                        <h4 class="disease-name">Fruit Rot</h4>
+                        <p class="disease-pathogen"><em>Lasiodiplodia theobromae</em></p>
+                        <div class="severity-indicator severity-high">
+                            <span class="severity-dots"><span></span><span></span><span></span><span></span></span>
+                            <span class="severity-label">High</span>
+                        </div>
+                        <button class="btn btn-outline btn-sm view-gene-btn" data-disease="fruit-rot">View Gene →</button>
+                    </div>
+                </div>
+                <div class="disease-card" data-disease="stem-end-rot">
+                    <div class="disease-color-bar bar-stemend"></div>
+                    <div class="disease-content">
+                        <h4 class="disease-name">Stem-End Decline</h4>
+                        <p class="disease-pathogen"><em>Phomopsis mangiferae</em></p>
+                        <div class="severity-indicator severity-medium">
+                            <span class="severity-dots"><span></span><span></span><span></span></span>
+                            <span class="severity-label">Moderate</span>
+                        </div>
+                        <button class="btn btn-outline btn-sm view-gene-btn" data-disease="stem-end-rot">View Gene →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION 2: GENE EXPLORER
+        ═══════════════════════════════════════════════════════════ -->
+        <section class="content-section" id="section-explorer" style="display:none" role="tabpanel">
+
+            <div class="section-heading">
+                <h2 class="gradient-text">Gene Explorer</h2>
+                <p class="section-desc">Search and browse the REAL NCBI-annotated Mangifera indica genome (GCF_011075055.1) — 35,754 genes across 20 chromosomes.</p>
+            </div>
+
+            <!-- NCBI source banner -->
+            <div class="glass-card ncbi-info-card">
+                <div class="ncbi-source-banner">
+                    <span class="ncbi-icon">🏛️</span>
+                    <span><strong>Real NCBI Data:</strong> All genes are from NCBI RefSeq GCF_011075055.1 (CATAS_Mindica_2.1). Gene IDs use NCBI LOC format (e.g., LOC123218660). Chromosome IDs are mapped from RefSeq accessions (NC_058137.1 = Chr1).</span>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="glass-card search-card">
+                <div class="search-bar" id="search-bar">
+                    <input type="text" class="search-input" id="gene-search-input" placeholder="Search real NCBI genes... (e.g. kinase, chitinase, LOC123, invertase, MYB)" autocomplete="off">
+                    <button class="btn btn-primary search-btn" id="gene-search-btn" aria-label="Search genes">
+                        <span class="search-icon">🔎</span> Search
+                    </button>
+                </div>
+                <div class="search-meta">
+                    <span class="results-count" id="results-count">Enter a query to search 35,754 real NCBI genes</span>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="glass-card table-card">
+                <div class="table-scroll">
+                    <table class="gene-table" id="gene-table">
+                        <thead>
+                            <tr>
+                                <th>NCBI Gene ID</th>
+                                <th>Name</th>
+                                <th>Chromosome</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Strand</th>
+                                <th>Length (bp)</th>
+                                <th>Gene Type / Product</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gene-table-body">
+                            <tr class="empty-row">
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <span class="empty-icon">🧬</span>
+                                        <p>Search the real NCBI annotated genome to see results here</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="pagination" id="pagination">
+                    <button class="btn btn-outline btn-sm" id="prev-page" disabled>← Previous</button>
+                    <span class="page-info" id="page-info">Page 1</span>
+                    <button class="btn btn-outline btn-sm" id="next-page" disabled>Next →</button>
+                </div>
+            </div>
+
+            <!-- Disease Candidate Genes -->
+            <div class="section-heading">
+                <h2 class="gradient-text">Disease Candidate Genes (6 Targets)</h2>
+                <p class="section-desc">Pre-identified susceptibility genes from the real genome — prime targets for CRISPR editing with NCBI coordinates.</p>
+            </div>
+            <div class="glass-card table-card">
+                <div class="table-scroll">
+                    <table class="gene-table candidate-table" id="candidate-gene-table">
+                        <thead>
+                            <tr>
+                                <th>NCBI Gene ID</th>
+                                <th>Name</th>
+                                <th>Chromosome</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Strand</th>
+                                <th>Length (bp)</th>
+                                <th>Associated Disease</th>
+                            </tr>
+                        </thead>
+                        <tbody id="candidate-gene-body">
+                            <!-- Loaded dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION 3: GWAS LAB
+        ═══════════════════════════════════════════════════════════ -->
+        <section class="content-section" id="section-gwas" style="display:none" role="tabpanel">
+
+            <div class="section-heading">
+                <h2 class="gradient-text">Genome-Wide Association Study (GWAS)</h2>
+                <p class="section-desc">Run real-data association analysis on <strong>161 mango accessions</strong> and <strong>135,079 SNP markers</strong>. Select a measured or derived quality trait to generate Manhattan and QQ plots, revealing statistically significant genetic variants.</p>
+                <div class="section-divider"></div>
+            </div>
+
+            <!-- GWAS Controls -->
+            <div class="glass-card gwas-controls-card">
+                <div class="gwas-controls">
+                    <div class="trait-selector" id="trait-selector">
+                        <label class="control-label">Select Phenotypic Trait for Association Mapping</label>
+                        
+                        <div class="trait-category">
+                            <h4 class="trait-cat-title">📏 Real Measured Fruit Quality Traits</h4>
+                            <div class="trait-buttons">
+                                <button class="trait-btn active" id="trait-fruit-weight" data-trait="fruitWeight (g)">⚖️ Fruit Weight</button>
+                                <button class="trait-btn" id="trait-fruit-length" data-trait="fruitLength (mm)">📏 Fruit Length</button>
+                                <button class="trait-btn" id="trait-fruit-width" data-trait="fruitWidth (mm)">↔️ Fruit Width</button>
+                                <button class="trait-btn" id="trait-fruit-thickness" data-trait="fruitThickness (mm)">🪵 Fruit Thickness</button>
+                                <button class="trait-btn" id="trait-brix" data-trait="brix">🍯 Brix (Sugar Content)</button>
+                                <button class="trait-btn" id="trait-pulp-weight" data-trait="Pulp">🍑 Pulp Weight</button>
+                                <button class="trait-btn" id="trait-stone-weight" data-trait="stoneWeight (g)">🪨 Stone Weight</button>
+                                <button class="trait-btn" id="trait-stone-length" data-trait="stoneLength (mm)">📏 Stone Length</button>
+                                <button class="trait-btn" id="trait-stone-width" data-trait="stoneWidth (mm)">↔️ Stone Width</button>
+                                <button class="trait-btn" id="trait-stone-thickness" data-trait="stoneThickness (mm)">🪵 Stone Thickness</button>
+                                <button class="trait-btn" id="trait-seed-weight" data-trait="seedWeight (g)">🌱 Seed Weight</button>
+                                <button class="trait-btn" id="trait-seed-length" data-trait="seedLength (mm)">📏 Seed Length</button>
+                                <button class="trait-btn" id="trait-seed-width" data-trait="seedWidth (mm)">↔️ Seed Width</button>
+                                <button class="trait-btn" id="trait-seed-thickness" data-trait="seedThickness (mm)">🪵 Seed Thickness</button>
+                            </div>
+                        </div>
+
+                        <div class="trait-category">
+                            <h4 class="trait-cat-title">🧪 Biologically Derived Traits</h4>
+                            <div class="trait-buttons">
+                                <button class="trait-btn" id="trait-shape-index" data-trait="Fruit Shape Index">📐 Fruit Shape Index</button>
+                                <button class="trait-btn" id="trait-pulp-ratio" data-trait="Pulp Ratio">🍑 Pulp Ratio</button>
+                                <button class="trait-btn" id="trait-seed-ratio" data-trait="Seed Ratio">🌱 Seed Ratio</button>
+                                <button class="trait-btn" id="trait-stone-ratio" data-trait="Stone Ratio">🪨 Stone Ratio</button>
+                                <button class="trait-btn" id="trait-edible-portion" data-trait="Edible Portion">🍽️ Edible Portion (%)</button>
+                                <button class="trait-btn" id="trait-brix-yield" data-trait="Brix Yield Index">🧪 Brix Yield Index</button>
+                                <button class="trait-btn" id="trait-density" data-trait="Fruit Density Index">⚖️ Fruit Density Index</button>
+                                <button class="trait-btn" id="trait-pulp-seed" data-trait="Pulp-to-Seed Ratio">📊 Pulp-to-Seed Ratio</button>
+                                <button class="trait-btn" id="trait-pulp-stone" data-trait="Pulp-to-Stone Ratio">📊 Pulp-to-Stone Ratio</button>
+                                <button class="trait-btn" id="trait-sweetness-eff" data-trait="Sweetness Efficiency Index">📊 Sweetness Efficiency Index</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gwas-stats-row" id="gwas-stats-row">
+                        <div class="gwas-stat">
+                            <span class="gwas-stat-num" id="gwas-total-snps">135,079</span>
+                            <span class="gwas-stat-label">SNP Markers</span>
+                        </div>
+                        <div class="gwas-stat">
+                            <span class="gwas-stat-num" id="gwas-sig-snps">—</span>
+                            <span class="gwas-stat-label">Significant Loci</span>
+                        </div>
+                        <div class="gwas-stat">
+                            <span class="gwas-stat-num">161</span>
+                            <span class="gwas-stat-label">Genotyped Cultivars</span>
+                        </div>
+                        <div class="gwas-stat">
+                            <span class="gwas-stat-num">21</span>
+                            <span class="gwas-stat-label">Available Traits</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-lg btn-gwas-run" id="btn-gwas-run">
+                        <span class="btn-text">▶ Run Association Analysis</span>
+                        <span class="spinner" id="gwas-spinner" style="display:none"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Manhattan Plot -->
+            <div class="glass-card plot-card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <h3>Manhattan Plot</h3>
+                        <span class="badge badge-info" id="gwas-trait-label">fruitWeight (g)</span>
+                    </div>
+                    <div id="gwas-top-gene-container" style="display: none; font-size: 0.85rem; color: #fbbf24; font-weight: 700; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); padding: 4px 10px; border-radius: 6px;">
+                        🏆 Top Candidate Gene: <span id="gwas-top-gene-name" style="font-family: var(--font-mono); font-weight: bold;">-</span>
+                    </div>
+                </div>
+                <div class="canvas-container" id="manhattan-container">
+                    <canvas id="manhattan-canvas" width="1200" height="400"></canvas>
+                    <div class="plot-placeholder" id="manhattan-placeholder">
+                        <span class="placeholder-icon">📈</span>
+                        <p>Select a trait and click "Run Association Analysis"</p>
+                    </div>
+                </div>
+                <div class="plot-footer">
+                    <div class="plot-legend">
+                        <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span> Significant (p &lt; 5×10⁻⁸)</span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#fbbf24"></span> Suggestive (p &lt; 1×10⁻⁵)</span>
+                        <span class="legend-item"><span class="legend-dot" style="background:#5B8FB9"></span> Not significant</span>
+                    </div>
+                    <span class="threshold-label">Bonferroni significance threshold: −log₁₀(p) = 7.30</span>
+                </div>
+            </div>
+
+            <!-- GWAS Candidate Genes Panel -->
+            <div class="glass-card table-card" id="gwas-candidate-panel">
+                <div class="card-header">
+                    <h3>GWAS Candidate Genes Panel</h3>
+                    <span class="badge badge-info">Peak Significant Associations</span>
+                </div>
+                <div class="table-scroll">
+                    <table class="gene-table" id="gwas-candidate-table">
+                        <thead>
+                            <tr>
+                                <th>SNP Marker</th>
+                                <th>Gene ID</th>
+                                <th>Product Description</th>
+                                <th>Functional Context</th>
+                                <th>Distance to Gene</th>
+                                <th>Biotype</th>
+                                <th>p-value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gwas-candidate-body">
+                            <tr class="empty-row">
+                                <td colspan="7" style="text-align: center; color: #64748b; padding: 24px;">
+                                    No association analysis run yet.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SNP Detail Panel -->
+            <div class="glass-card snp-detail-panel" id="snp-detail-panel" style="display:none">
+                <div class="card-header">
+                    <h3>Significant Variant Details</h3>
+                    <button class="btn-close" id="snp-panel-close" aria-label="Close SNP detail panel">✕</button>
+                </div>
+                <div class="snp-details-grid">
+                    <div class="snp-field">
+                        <span class="snp-label">SNP Marker ID</span>
+                        <span class="snp-value" id="snp-id">—</span>
+                    </div>
+                    <div class="snp-field">
+                        <span class="snp-label">Chromosome</span>
+                        <span class="snp-value" id="snp-chr">—</span>
+                    </div>
+                    <div class="snp-field">
+                        <span class="snp-label">Position (bp)</span>
+                        <span class="snp-value mono" id="snp-pos">—</span>
+                    </div>
+                    <div class="snp-field">
+                        <span class="snp-label">P-value</span>
+                        <span class="snp-value mono" id="snp-pval">—</span>
+                    </div>
+                    <div class="snp-field">
+                        <span class="snp-label">Nearest Gene</span>
+                        <span class="snp-value" id="snp-gene">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cultivar Allele Frequency Bar Chart -->
+            <div class="glass-card cultivar-af-card" id="cultivar-af-card" style="display:none">
+                <div class="card-header">
+                    <h3>Cultivar Phenotype & Genotype Comparison</h3>
+                    <span class="badge badge-muted" id="af-snp-label">Top SNP</span>
+                </div>
+                <p class="card-desc">Phenotypic value (bar height) and corresponding genotype dosage (Green = Homozygous Alternative/high value, Yellow = Heterozygous, Red = Homozygous Reference) at the peak SNP.</p>
+                <div class="af-chart-container">
+                    <canvas id="af-chart-canvas" width="900" height="300"></canvas>
+                </div>
+                <div class="af-chart-legend">
+                    <span class="legend-item"><span class="legend-dot" style="background:#22c55e"></span> Homozygous Alternative (2.0 / Alt Allele)</span>
+                    <span class="legend-item"><span class="legend-dot" style="background:#fbbf24"></span> Heterozygous (1.0 / Het Allele)</span>
+                    <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span> Homozygous Reference (0.0 / Ref Allele)</span>
+                </div>
+            </div>
+
+            <!-- QQ Plot -->
+            <div class="glass-card plot-card qq-plot-card">
+                <div class="card-header">
+                    <h3>GWAS QQ Plot</h3>
+                    <span class="badge badge-muted">Diagnostic</span>
+                </div>
+                <div class="canvas-container qq-container">
+                    <canvas id="qq-canvas" width="400" height="400"></canvas>
+                    <div class="plot-placeholder" id="qq-placeholder">
+                        <span class="placeholder-icon">📉</span>
+                        <p>QQ plot will appear after running analysis</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION 3B: GENOMIC PREDICTION
+        ═══════════════════════════════════════════════════════════ -->
+        <section class="content-section" id="section-prediction" style="display:none" role="tabpanel">
+            <div class="section-heading">
+                <h2 class="gradient-text">Genomic Prediction (Genomic Selection)</h2>
+                <p class="section-desc">Predict complex quantitative traits directly from high-density SNP markers. Choose a breeding target and compare ridge regression (rrBLUP), Random Forest, and XGBoost models using 5-fold cross-validation.</p>
+                <div class="section-divider"></div>
+            </div>
+
+            <div class="glass-card prediction-controls-card">
+                <div class="gwas-controls">
+                    <div style="display: flex; gap: 24px; flex-wrap: wrap; width: 100%;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <label class="control-label" for="predict-trait">Target Quality Phenotype</label>
+                            <select id="predict-trait" class="search-input" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px; border-radius: 8px;">
+                                <option value="fruitWeight (g)">⚖️ Fruit Weight (g)</option>
+                                <option value="fruitLength (mm)">📏 Fruit Length (mm)</option>
+                                <option value="fruitWidth (mm)">↔️ Fruit Width (mm)</option>
+                                <option value="fruitThickness (mm)">🪵 Fruit Thickness (mm)</option>
+                                <option value="brix">🍯 Brix (Sugar Content)</option>
+                                <option value="Pulp">🍑 Pulp Weight (g)</option>
+                                <option value="seedWeight (g)">🌱 Seed Weight (g)</option>
+                                <option value="seedLength (mm)">🌱 Seed Length (mm)</option>
+                                <option value="seedWidth (mm)">↔️ Seed Width (mm)</option>
+                                <option value="seedThickness (mm)">🪵 Seed Thickness (mm)</option>
+                                <option value="stoneWeight (g)">🪨 Stone Weight (g)</option>
+                                <option value="stoneLength (mm)">🪨 Stone Length (mm)</option>
+                                <option value="stoneWidth (mm)">↔️ Stone Width (mm)</option>
+                                <option value="stoneThickness (mm)">🪵 Stone Thickness (mm)</option>
+                                <option value="Fruit Shape Index">📐 Fruit Shape Index</option>
+                                <option value="Pulp Ratio">🍑 Pulp Ratio</option>
+                                <option value="Seed Ratio">🌱 Seed Ratio</option>
+                                <option value="Stone Ratio">🪨 Stone Ratio</option>
+                                <option value="Edible Portion">🍽️ Edible Portion (%)</option>
+                                <option value="Brix Yield Index">🧪 Brix Yield Index</option>
+                                <option value="Fruit Density Index">⚖️ Fruit Density Index</option>
+                                <option value="Pulp-to-Seed Ratio">📊 Pulp-to-Seed Ratio</option>
+                                <option value="Pulp-to-Stone Ratio">📊 Pulp-to-Stone Ratio</option>
+                                <option value="Sweetness Efficiency Index">📊 Sweetness Efficiency Index</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 250px;">
+                            <label class="control-label" for="predict-model">Machine Learning Algorithm</label>
+                            <select id="predict-model" class="search-input" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px; border-radius: 8px;">
+                                <option value="rrBLUP">🔮 rrBLUP (Ridge Regression - Genomic BLUP)</option>
+                                <option value="Random Forest">🌲 Random Forest Regressor</option>
+                                <option value="XGBoost">⚡ XGBoost Regressor</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-lg btn-gwas-run" id="btn-predict-run" style="margin-top: 20px;">
+                        <span class="btn-text">▶ Run Genomic Prediction</span>
+                        <span class="spinner" id="predict-spinner" style="display:none"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Prediction Results Metrics Grid -->
+            <div class="stats-grid" id="prediction-metrics-grid" style="display:none; margin-bottom: 24px;">
+                <div class="stat-card">
+                    <span class="stat-number" id="pred-metric-r2">—</span>
+                    <span class="stat-label">Cross-Validated R²</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="pred-metric-corr">—</span>
+                    <span class="stat-label">Pearson Correlation (r)</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="pred-metric-rmse">—</span>
+                    <span class="stat-label">RMSE</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="pred-metric-mae">—</span>
+                    <span class="stat-label">MAE</span>
+                </div>
+            </div>
+
+            <!-- Plots Panel -->
+            <div class="prediction-plots-row" id="prediction-plots-row" style="display:none; display: flex; gap: 24px; flex-wrap: wrap;">
+                <!-- Observed vs Predicted scatter -->
+                <div class="glass-card plot-card" style="flex: 1; min-width: 400px;">
+                    <div class="card-header">
+                        <h3>Observed vs. Predicted Scatter Plot</h3>
+                    </div>
+                    <div class="canvas-container" style="height: 350px;">
+                        <canvas id="pred-scatter-canvas" width="500" height="350"></canvas>
+                    </div>
+                </div>
+
+                <!-- Feature Importance -->
+                <div class="glass-card plot-card" style="flex: 1; min-width: 400px;">
+                    <div class="card-header">
+                        <h3>Top Predictor SNPs (Feature Importance)</h3>
+                    </div>
+                    <div class="canvas-container" style="height: 350px;">
+                        <canvas id="pred-feature-canvas" width="500" height="350"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cultivars Predictions Table -->
+            <div class="glass-card table-card" id="prediction-table-card" style="display:none; margin-top: 24px;">
+                <div class="card-header">
+                    <h3>Accessions Predicted Breeding Values</h3>
+                </div>
+                <div class="table-scroll">
+                    <table class="gene-table">
+                        <thead>
+                            <tr>
+                                <th>Cultivar Accession</th>
+                                <th>Observed Value</th>
+                                <th>Predicted Value</th>
+                                <th>Prediction Deviation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prediction-table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION 3C: UNSEEN CULTIVAR VALIDATION
+        ═══════════════════════════════════════════════════════════ -->
+        <section class="content-section" id="section-validation" style="display:none" role="tabpanel">
+            <div class="section-heading">
+                <h2 class="gradient-text">Unseen Cultivar Validation (Holdout Generalization)</h2>
+                <p class="section-desc">Test model generalizability by training on 160 cultivars and predicting the phenotypes of a single held-out cultivar. Overall Leave-One-Out Cross-Validation (LOOCV) metrics show scientific validation accuracy across the entire population.</p>
+                <div class="section-divider"></div>
+            </div>
+
+            <div class="glass-card validation-controls-card">
+                <div class="gwas-controls">
+                    <div style="display: flex; gap: 24px; flex-wrap: wrap; width: 100%;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <label class="control-label" for="val-holdout-select">Select Held-Out Cultivar (1 of 161)</label>
+                            <select id="val-holdout-select" class="search-input" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px; border-radius: 8px;">
+                                <!-- Populated dynamically by JS -->
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 250px;">
+                            <label class="control-label" for="val-model-select">Machine Learning Model</label>
+                            <select id="val-model-select" class="search-input" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px; border-radius: 8px;">
+                                <option value="rrBLUP">🔮 rrBLUP (Ridge Regression)</option>
+                                <option value="Random Forest">🌲 Random Forest</option>
+                                <option value="XGBoost">⚡ XGBoost</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-lg btn-gwas-run" id="btn-val-run" style="margin-top: 20px;">
+                        <span class="btn-text">▶ Run Holdout Validation</span>
+                        <span class="spinner" id="val-spinner" style="display:none"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Validation Metrics Grid -->
+            <div id="val-loocv-card" class="glass-card" style="display: none; margin-bottom: 24px;">
+                <div class="card-header">
+                    <h3>Overall Model Generalization Accuracy (LOOCV)</h3>
+                    <span class="badge badge-info">161-Accession Leave-One-Out Loop</span>
+                </div>
+                <div class="stats-grid" id="val-loocv-grid">
+                    <!-- Populated dynamically by JS -->
+                </div>
+            </div>
+
+            <!-- Comparative Results -->
+            <div class="glass-card table-card" id="val-results-card" style="display: none;">
+                <div class="card-header">
+                    <h3>Comparative Trait Predictions for Held-Out Cultivar</h3>
+                    <span class="badge badge-success" id="val-holdout-badge">Alphonso</span>
+                </div>
+                <div class="table-scroll">
+                    <table class="gene-table">
+                        <thead>
+                            <tr>
+                                <th>Measured / Derived Trait</th>
+                                <th>Actual Measured Value</th>
+                                <th>Predicted Value (LOO)</th>
+                                <th>Deviation</th>
+                                <th>Relative Error (%)</th>
+                                <th>Accuracy Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="val-results-tbody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION: NEW CULTIVAR PREDICTION
+        ═══════════════════════════════════════════════════════════ -->
+        <section class="content-section" id="section-new-cultivar" style="display:none" role="tabpanel">
+            <div class="section-heading">
+                <h2 class="gradient-text">Predict New Cultivar Phenotype</h2>
+                <p class="section-desc">Upload or simulate a new mango accession's SNP genotype profile. The platform will predict all fruit quality traits using trained genomic prediction models, display confidence intervals, identify the most genetically similar known cultivars, and show which SNPs contribute most to each predicted trait.</p>
+                <div class="section-divider"></div>
+            </div>
+
+            <!-- Controls Card -->
+            <div class="glass-card" style="margin-bottom: 24px; padding: 28px;">
+                <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: stretch;">
+                    <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; justify-content: space-between; gap: 16px;">
+                        <div>
+                            <label class="control-label" for="new-cv-model">Genomic Selection Model</label>
+                            <select id="new-cv-model" class="search-input" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px; border-radius: 8px;">
+                                <option value="rrBLUP">🔮 rrBLUP (Ridge Regression)</option>
+                                <option value="Random Forest">🌲 Random Forest</option>
+                                <option value="XGBoost">⚡ XGBoost</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="control-label">Simulation Mode</label>
+                            <button class="btn btn-primary btn-lg" id="btn-new-cv-simulate" style="width: 100%;">
+                                <span class="btn-text">🎲 Simulate Random Cultivar</span>
+                                <span class="spinner" id="new-cv-spinner" style="display:none"></span>
+                            </button>
+                            <div style="margin-top: 8px; font-size: 0.8rem; color: #64748b;">
+                                Generates a genotype with ~5% mutational drift from the panel average.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1.2; min-width: 320px; border-left: 1px solid rgba(255, 255, 255, 0.06); padding-left: 24px;">
+                        <label class="control-label">Upload Genotype Dataset (CSV or VCF)</label>
+                        <div id="new-cv-upload-dropzone" style="border: 2px dashed rgba(6, 182, 212, 0.25); border-radius: 12px; padding: 24px; text-align: center; background: rgba(6, 182, 212, 0.02); cursor: pointer; transition: all var(--transition-base); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                            <span style="font-size: 2rem;">📤</span>
+                            <span style="font-weight: 600; color: #e2e8f0;">Drag & Drop or Click to Browse</span>
+                            <span style="font-size: 0.8rem; color: #94a3b8;">Supports standard VCF (.vcf) or Marker CSV (.csv) files</span>
+                            <span id="upload-file-name" style="font-size: 0.85rem; color: #14b8a6; font-family: var(--font-mono); display: none; margin-top: 8px; font-weight: bold;"></span>
+                            <input type="file" id="new-cv-upload-input" accept=".csv,.vcf" style="display: none;">
+                        </div>
+                        <div id="upload-status-info" style="margin-top: 10px; font-size: 0.82rem; color: #94a3b8; display: none;">
+                            <!-- Matched marker summary will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Container (hidden until prediction runs) -->
+            <div id="new-cv-results-container" style="display: none;">
+
+                <!-- Predicted Traits Grid -->
+                <div class="glass-card" style="margin-bottom: 24px;">
+                    <div class="card-header">
+                        <h3>Predicted Trait Values</h3>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <button id="btn-download-report" class="btn btn-outline btn-sm" style="border: 1px solid rgba(6, 182, 212, 0.3); color: #14b8a6; padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; background: transparent;">
+                                📄 Download Breeding Report
+                            </button>
+                            <span class="badge badge-success" id="new-cv-model-badge">rrBLUP</span>
+                        </div>
+                    </div>
+                    <div id="new-cv-traits-grid" class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Two-panel row: Similarity + SNP Contributions -->
+                <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px;">
+                    <!-- Genetic Similarity Panel -->
+                    <div class="glass-card" style="flex: 1; min-width: 350px;">
+                        <div class="card-header">
+                            <h3>Genetically Similar Cultivars</h3>
+                            <span class="badge badge-info">Euclidean Distance</span>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="gene-table" id="new-cv-similarity-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Cultivar</th>
+                                        <th>Distance</th>
+                                        <th>Similarity</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="new-cv-similarity-body">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SNP Contribution Chart -->
+                    <div class="glass-card" style="flex: 1; min-width: 350px;">
+                        <div class="card-header">
+                            <h3>Top SNP Contributors</h3>
+                            <span class="badge badge-warning">Feature Importance</span>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label class="control-label" for="new-cv-snp-trait-select">Select trait to view contributing SNPs:</label>
+                            <select id="new-cv-snp-trait-select" class="search-input" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid #334155; padding: 8px; border-radius: 8px; margin-top: 4px;">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="canvas-container" style="height: 250px;">
+                            <canvas id="new-cv-snp-canvas" width="500" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Population Comparison Visual -->
+                <div class="glass-card" style="margin-bottom: 24px;">
+                    <div class="card-header">
+                        <h3>Trait Comparison vs. Population</h3>
+                        <span class="badge badge-muted">New cultivar vs. 161 accessions</span>
+                    </div>
+                    <div class="canvas-container" style="height: 300px;">
+                        <canvas id="new-cv-comparison-canvas" width="900" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION 3F: GENETIC PEDIGREE
+        ═══════════════════════════════════════════════════════════ -->
+        <section class="content-section" id="section-pedigree" style="display:none" role="tabpanel">
+            <div class="section-heading">
+                <h2 class="gradient-text">Genetic Pedigree & Ancestry Studio</h2>
+                <p class="section-desc">Trace the lineage of traditional cultivars and design multi-generational crosses. Visualize ancestral inheritance and predict traits for F1 and F2 offspring nodes.</p>
+                <div class="section-divider"></div>
+            </div>
+
+            <!-- Dashboard selector for sub-modes -->
+            <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                <button class="btn btn-primary" id="btn-pedigree-mode-explorer" style="padding: 10px 20px; font-size: 0.95rem; border-radius: 8px;">🌳 Historical Ancestry Explorer</button>
+                <button class="btn btn-outline" id="btn-pedigree-mode-designer" style="padding: 10px 20px; font-size: 0.95rem; border-radius: 8px;">🧬 Multi-Gen Cross Designer</button>
+            </div>
+
+            <!-- View 1: Historical Ancestry Explorer -->
+            <div id="pedigree-view-explorer" class="glass-card" style="padding: 24px; margin-bottom: 24px;">
+                <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <label class="control-label" for="pedigree-select-cultivar">Select Cultivar to Trace Ancestry</label>
+                        <select id="pedigree-select-cultivar" class="search-input" style="width: 100%; background: #121622; color: #fff; border: 1px solid rgba(255,255,255,0.08); padding: 10px; border-radius: 8px;">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SVG Tree container -->
+                <div class="pedigree-tree-container" id="pedigree-explorer-tree-container" style="position: relative; width: 100%; height: 420px; background: rgba(10,12,22,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <svg id="pedigree-explorer-svg" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; pointer-events: none;"></svg>
+                    <!-- HTML node overlays will be placed here dynamically -->
+                    <div id="pedigree-explorer-nodes" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- View 2: Multi-Gen Cross Designer -->
+            <div id="pedigree-view-designer" class="glass-card" style="padding: 24px; display: none; margin-bottom: 24px;">
+                <p style="font-size: 0.88rem; color: #94a3b8; margin-bottom: 20px;">
+                    Select Parent A and Parent B to form an F1 Hybrid, then select Parent C to cross with F1 to generate a custom F2 Hybrid.
+                </p>
+                
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 24px;">
+                    <div style="flex: 1; min-width: 180px;">
+                        <label class="control-label" for="pedigree-parent-a">🌸 Parent A (Grandmother)</label>
+                        <select id="pedigree-parent-a" class="search-input" style="width: 100%; background: #121622; color: #fff; border: 1px solid rgba(255,255,255,0.08); padding: 10px; border-radius: 8px;">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 180px;">
+                        <label class="control-label" for="pedigree-parent-b">🌾 Parent B (Grandfather)</label>
+                        <select id="pedigree-parent-b" class="search-input" style="width: 100%; background: #121622; color: #fff; border: 1px solid rgba(255,255,255,0.08); padding: 10px; border-radius: 8px;">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 180px;">
+                        <label class="control-label" for="pedigree-parent-c">🌴 Parent C (Donor Parent)</label>
+                        <select id="pedigree-parent-c" class="search-input" style="width: 100%; background: #121622; color: #fff; border: 1px solid rgba(255,255,255,0.08); padding: 10px; border-radius: 8px;">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label class="control-label" for="pedigree-model">Genomic Model</label>
+                        <select id="pedigree-model" class="search-input" style="width: 100%; background: #121622; color: #fff; border: 1px solid rgba(255,255,255,0.08); padding: 10px; border-radius: 8px;">
+                            <option value="rrBLUP">🔮 rrBLUP</option>
+                            <option value="Random Forest">🌲 Random Forest</option>
+                            <option value="XGBoost">⚡ XGBoost</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" id="btn-pedigree-simulate" style="padding: 10px 24px; font-weight: 600; border-radius: 8px;">
+                            <span class="btn-text">⚡ Simulate F2 Tree</span>
+                            <span class="spinner" id="pedigree-spinner" style="display:none"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SVG Tree container -->
+                <div class="pedigree-tree-container" id="pedigree-designer-tree-container" style="position: relative; width: 100%; height: 460px; background: rgba(10,12,22,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <svg id="pedigree-designer-svg" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; pointer-events: none;"></svg>
+                    <!-- HTML node overlays will be placed here dynamically -->
+                    <div id="pedigree-designer-nodes" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION 3C: POPULATION STRUCTURE
+        ═══════════════════════════════════════════════════════════ -->
+        <section class="content-section" id="section-pca" style="display:none" role="tabpanel">
+            <div class="section-heading">
+                <h2 class="gradient-text">Population Structure (PCA Analysis)</h2>
+                <p class="section-desc">Principal Component Analysis (PCA) performed on 135,079 SNP markers for 161 accessions. Explore the genetic clusters and check how phenotypic traits are distributed across genetic groups.</p>
+                <div class="section-divider"></div>
+            </div>
+
+            <div class="prediction-plots-row" style="display: flex; gap: 24px; flex-wrap: wrap;">
+                <!-- PCA Plot Card -->
+                <div class="glass-card plot-card" style="flex: 2; min-width: 500px;">
+                    <div class="card-header">
+                        <h3>Genetic Clustering (PC1 vs PC2)</h3>
+                    </div>
+                    <div class="canvas-container" style="height: 500px;">
+                        <canvas id="pca-canvas" width="700" height="500"></canvas>
+                        <div class="plot-placeholder" id="pca-placeholder">
+                            <span class="placeholder-icon">🧬</span>
+                            <p>Loading population structure PCA coordinates...</p>
+                        </div>
+                    </div>
+                    <div class="plot-footer">
+                        <div class="plot-legend">
+                            <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span> Subpopulation 1 (SP1)</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span> Subpopulation 2 (SP2)</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span> Subpopulation 3 (SP3)</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#a855f7"></span> Admixed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PCA Hover Details Panel -->
+                <div class="glass-card plot-card" style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+                    <div class="card-header">
+                        <h3>Accession Genetic Profile</h3>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;" id="pca-details-empty">
+                        <span style="font-size: 3rem; margin-bottom: 15px;">🔍</span>
+                        <p style="color: #94a3b8;">Hover or click on any genetic datapoint to explore its phenotypic values and genetic subpopulation.</p>
+                    </div>
+                    <div style="display: none; padding: 15px;" id="pca-details-panel">
+                        <div class="snp-field" style="margin-bottom: 15px;">
+                            <span class="snp-label">Accession ID</span>
+                            <span class="snp-value" id="pca-cv-name" style="font-size: 1.4rem; color: #fbbf24;">—</span>
+                        </div>
+                        <div class="snp-field" style="margin-bottom: 15px;">
+                            <span class="snp-label">Genetic Subpopulation</span>
+                            <span class="snp-value" id="pca-cv-subpop">—</span>
+                        </div>
+                        <div class="snp-field" style="margin-bottom: 15px;">
+                            <span class="snp-label">Brix (Sugar Content)</span>
+                            <span class="snp-value mono" id="pca-cv-brix">—</span>
+                        </div>
+                        <div class="snp-field" style="margin-bottom: 15px;">
+                            <span class="snp-label">Fruit Weight (g)</span>
+                            <span class="snp-value mono" id="pca-cv-weight">—</span>
+                        </div>
+                        <div class="snp-field" style="margin-bottom: 15px;">
+                            <span class="snp-label">PC1 Coordinate</span>
+                            <span class="snp-value mono" id="pca-cv-pc1">—</span>
+                        </div>
+                        <div class="snp-field" style="margin-bottom: 15px;">
+                            <span class="snp-label">PC2 Coordinate</span>
+                            <span class="snp-value mono" id="pca-cv-pc2">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             SECTION 3D: BREEDER RECOMMENDATION
+        ═══════════════════════════════════════════════════════════ -->
+        <section class="content-section" id="section-breeder" style="display:none" role="tabpanel">
+            <div class="section-heading">
+                <h2 class="gradient-text">Breeder Recommendation Dashboard</h2>
+                <p class="section-desc">Design a customized multi-trait Fruit Quality Index (FQI) to rank the 161 accessions. Select breeder priority weights or use pre-configured presets to identify elite donor parents for hybrid cross design.</p>
+                <div class="section-divider"></div>
+            </div>
+
+            <!-- Breeder Controls -->
+            <div class="glass-card controls-card" style="margin-bottom: 24px; padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                    <h3>Index Weight Adjuster</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-outline btn-sm" id="preset-sweet">🍯 Max Sweetness</button>
+                        <button class="btn btn-outline btn-sm" id="preset-edible">🍑 Max Edible portion</button>
+                        <button class="btn btn-outline btn-sm" id="preset-balanced">⚖️ Balanced Premium</button>
+                    </div>
+                </div>
+
+                <div class="sliders-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px;">
+                    <div class="slider-container" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <label class="control-label" for="slider-brix">Brix (Sweetness)</label>
+                            <span id="label-brix" style="font-weight: 700; color: #fbbf24;">1.0</span>
+                        </div>
+                        <input type="range" id="slider-brix" min="0" max="3" step="0.1" value="1.0" style="accent-color: #fbbf24; cursor: pointer; width: 100%;">
+                    </div>
+
+                    <div class="slider-container" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <label class="control-label" for="slider-pulp">Pulp Ratio (Edible %)</label>
+                            <span id="label-pulp" style="font-weight: 700; color: #fbbf24;">1.0</span>
+                        </div>
+                        <input type="range" id="slider-pulp" min="0" max="3" step="0.1" value="1.0" style="accent-color: #fbbf24; cursor: pointer; width: 100%;">
+                    </div>
+
+                    <div class="slider-container" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <label class="control-label" for="slider-seed">Low Seed Ratio (Seed Size)</label>
+                            <span id="label-seed" style="font-weight: 700; color: #fbbf24;">1.0</span>
+                        </div>
+                        <input type="range" id="slider-seed" min="0" max="3" step="0.1" value="1.0" style="accent-color: #fbbf24; cursor: pointer; width: 100%;">
+                    </div>
+
+                    <div class="slider-container" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <label class="control-label" for="slider-stone">Low Stone Ratio (Stone Size)</label>
+                            <span id="label-stone" style="font-weight: 700; color: #fbbf24;">1.0</span>
+                        </div>
+                        <input type="range" id="slider-stone" min="0" max="3" step="0.1" value="1.0" style="accent-color: #fbbf24; cursor: pointer; width: 100%;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ranked Accessions Grid -->
+            <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                <!-- Ranking table -->
+                <div class="glass-card table-card" style="flex: 2; min-width: 500px;">
+                    <div class="card-header">
+                        <h3>Ranked Breeder Recommendations</h3>
+                    </div>
+                    <div class="table-scroll" style="max-height: 550px; overflow-y: auto;">
+                        <table class="gene-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Cultivar Name</th>
+                                    <th>Subpopulation</th>
+                                    <th>Brix</th>
+                                    <th>Pulp Ratio</th>
+                                    <th>Seed Ratio</th>
+                                    <th>Stone Ratio</th>
+                                    <th>FQI Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="breeder-ranking-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Crossing Recommender -->
+                <div class="glass-card plot-card" style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 15px;">
+                    <div class="card-header">
+                        <h3>Elite Cross Recommendations</h3>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #94a3b8;">Top genetic parent combinations recommended to maximize hybrid vigor and complement traits based on current breeder index choices.</p>
+                    <div style="display: flex; flex-direction: column; gap: 15px; flex: 1; justify-content: center;" id="crosses-recommender-container">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hybrid Breeding Simulator -->
+            <div class="glass-card" style="margin-top: 24px; padding: 24px;">
+                <div class="card-header">
+                    <h3 class="gradient-text">🧬 Genomic Breeding Cross Simulator</h3>
+                    <span class="badge badge-warning">F1 Offspring Genotypic Segregator</span>
+                </div>
+                <p style="font-size: 0.88rem; color: #94a3b8; margin-bottom: 20px;">
+                    Select two parent cultivars to run a virtual Mendelian gametic cross. The simulator segregates each of the 135,079 SNP loci according to parent alleles, calculates PCA-based genetic distance (to estimate hybrid vigor), and predicts offspring fruit quality and resistance traits using genomic selection models.
+                </p>
+                <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-end;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="control-label" for="cross-parent-a">🌸 Maternal Parent (Parent A)</label>
+                        <select id="cross-parent-a" class="search-input" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px; border-radius: 8px;">
+                            <!-- Populated dynamically by JS -->
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="control-label" for="cross-parent-b">🌾 Paternal Parent (Parent B)</label>
+                        <select id="cross-parent-b" class="search-input" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px; border-radius: 8px;">
+                            <!-- Populated dynamically by JS -->
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="control-label" for="cross-model">Genomic Model</label>
+                        <select id="cross-model" class="search-input" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px; border-radius: 8px;">
+                            <option value="rrBLUP">🔮 rrBLUP</option>
+                            <option value="Random Forest">🌲 Random Forest</option>
+                            <option value="XGBoost">⚡ XGBoost</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary btn-lg" id="btn-cross-simulate">
+                            <span class="btn-text">⚡ Simulate F1 Hybrid</span>
+                            <span class="spinner" id="cross-spinner" style="display:none"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Breeding Results -->
+                <div id="cross-results-container" style="display: none; margin-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <span style="font-size: 0.9rem; color: #94a3b8;">Cross Outcome:</span>
+                            <h4 style="font-size: 1.25rem; color: #14b8a6;" id="cross-title-text">Parent A × Parent B F1 Offspring</h4>
+                        </div>
+                        <div id="cross-diversity-score" style="font-size: 0.9rem; font-weight: 700; color: #fbbf24; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); padding: 6px 12px; border-radius: 6px;">
+                            PCA Genetic Distance: <span id="cross-pca-val">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="table-scroll">
+                        <table class="gene-table">
+                            <thead>
+                                <tr>
+                                    <th>Trait Name</th>
+                                    <th>Parent A Value</th>
+                                    <th>Offspring Prediction</th>
+                                    <th>Offspring Percentile</th>
+                                    <th>Parent B Value</th>
+                                    <th>Breeding Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cross-results-tbody">
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section" id="section-crispr" style="display:none" role="tabpanel">
+
+            <div class="section-heading">
+                <h2 class="gradient-text">Gene Editing Explorer (Simulation)</h2>
+                <span class="badge badge-danger" style="margin-top: 8px; display: inline-block; font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; font-weight: bold; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); color: #f87171;">⚠️ Computational Simulation Disclaimer</span>
+                <p class="section-desc" style="margin-top: 12px;">This module simulates homology-directed repair (HDR) using Cas9 and guide RNA design. Epigenetic modifications, cellular response efficiency, off-target impacts, and target chromatin state are not fully captured by this digital model. Actual lab results may vary.</p>
+            </div>
+
+            <!-- Step 1: Select Target Gene (6 diseases) -->
+            <div class="glass-card crispr-step-card">
+                <div class="step-header">
+                    <span class="step-number">1</span>
+                    <h3>Select Target Gene</h3>
+                </div>
+                <div class="gene-select-grid" id="gene-select-grid">
+                    <button class="gene-select-card" id="gene-select-anthracnose" data-gene="anthracnose">
+                        <span class="gene-card-icon">🦠</span>
+                        <span class="gene-card-name">Anthracnose</span>
+                        <span class="gene-card-id">LOC123194460</span>
+                    </button>
+                    <button class="gene-select-card" id="gene-select-mildew" data-gene="powdery_mildew">
+                        <span class="gene-card-icon">🍃</span>
+                        <span class="gene-card-name">Powdery Mildew</span>
+                        <span class="gene-card-id">MLO-like · Chr3</span>
+                    </button>
+                    <button class="gene-select-card" id="gene-select-canker" data-gene="bacterial_canker">
+                        <span class="gene-card-icon">🔴</span>
+                        <span class="gene-card-name">Bacterial Canker</span>
+                        <span class="gene-card-id">LOC123228088</span>
+                    </button>
+                    <button class="gene-select-card" id="gene-select-malformation" data-gene="mango_malformation">
+                        <span class="gene-card-icon">🌿</span>
+                        <span class="gene-card-name">Malformation</span>
+                        <span class="gene-card-id">Mi-TLP1 · Chr11</span>
+                    </button>
+                    <button class="gene-select-card" id="gene-select-fruit-rot" data-gene="fruit_rot">
+                        <span class="gene-card-icon">🍑</span>
+                        <span class="gene-card-name">Fruit Rot</span>
+                        <span class="gene-card-id">LOC123195013</span>
+                    </button>
+                    <button class="gene-select-card" id="gene-select-stem-end" data-gene="stem_end_rot">
+                        <span class="gene-card-icon">🌱</span>
+                        <span class="gene-card-name">Stem-End Decline</span>
+                        <span class="gene-card-id">LOC123210000</span>
+                    </button>
+                </div>
+                <!-- Gene Info Panel -->
+                <div class="gene-info-panel" id="gene-info-panel" style="display:none">
+                    <div class="gene-info-grid">
+                        <div class="gene-info-field">
+                            <span class="info-label">NCBI Gene</span>
+                            <span class="info-value" id="crispr-gene-name">—</span>
+                        </div>
+                        <div class="gene-info-field">
+                            <span class="info-label">Chromosome</span>
+                            <span class="info-value" id="crispr-gene-chr">—</span>
+                        </div>
+                        <div class="gene-info-field">
+                            <span class="info-label">Coordinates</span>
+                            <span class="info-value mono" id="crispr-gene-coords">—</span>
+                        </div>
+                        <div class="gene-info-field">
+                            <span class="info-label">Mutation</span>
+                            <span class="info-value" id="crispr-gene-mutation">—</span>
+                        </div>
+                        <div class="gene-info-field">
+                            <span class="info-label">NCBI Citation</span>
+                            <span class="info-value" id="crispr-gene-citation" style="font-size:0.8rem; color:#94a3b8;">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Sequence Viewer -->
+            <div class="glass-card crispr-step-card">
+                <div class="step-header">
+                    <span class="step-number">2</span>
+                    <h3>Sequence Viewer</h3>
+                </div>
+                <div class="sequence-panel">
+                    <div class="sequence-block">
+                        <label class="sequence-label">
+                            <span class="label-dot dot-danger"></span>
+                            Susceptible Allele (e.g. Alphonso / Chaunsa / Langra)
+                        </label>
+                        <pre class="sequence-display" id="susceptible-seq">Select a target gene above to load sequences...</pre>
+                    </div>
+                    <div class="sequence-block">
+                        <label class="sequence-label">
+                            <span class="label-dot dot-success"></span>
+                            Resistant Allele (e.g. Tommy Atkins / Mallika / Amrapali)
+                        </label>
+                        <pre class="sequence-display" id="resistant-seq">Select a target gene above to load sequences...</pre>
+                    </div>
+                    <div class="sequence-block">
+                        <label class="sequence-label">
+                            <span class="label-dot dot-info"></span>
+                            Sequence Diff — Mutations Highlighted
+                        </label>
+                        <pre class="sequence-display diff-display" id="sequence-diff">Select a target gene above to view mutations...</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Guide RNA Design -->
+            <div class="glass-card crispr-step-card">
+                <div class="step-header">
+                    <span class="step-number">3</span>
+                    <h3>Guide RNA Design</h3>
+                </div>
+                <div class="grna-controls">
+                    <button class="btn btn-primary" id="find-pam-btn">
+                        <span class="btn-text">Find PAM Sites</span>
+                        <span class="spinner" id="pam-spinner" style="display:none"></span>
+                    </button>
+                </div>
+                <div class="pam-sites-list" id="pam-sites-list" style="display:none">
+                    <h4>Discovered PAM Sites</h4>
+                    <div class="pam-sites-container" id="pam-sites-container">
+                        <!-- PAM site cards loaded dynamically -->
+                    </div>
+                </div>
+                <div class="grna-manual-input">
+                    <label class="control-label" for="grna-input">Manual gRNA Input (20 nt)</label>
+                    <div class="grna-input-row">
+                        <input type="text" class="grna-input" id="grna-input" maxlength="20" placeholder="Enter 20-character guide RNA sequence..." spellcheck="false">
+                        <span class="grna-length" id="grna-length">0/20</span>
+                    </div>
+                </div>
+                <button class="btn btn-success btn-lg" id="simulate-crispr-btn">
+                    <span class="btn-text">✂️ Simulate CRISPR Edit</span>
+                    <span class="spinner" id="crispr-spinner" style="display:none"></span>
+                </button>
+            </div>
+
+            <!-- Step 4: Results Panel -->
+            <div class="glass-card crispr-step-card results-card" id="crispr-results" style="display:none">
+                <div class="step-header">
+                    <span class="step-number">4</span>
+                    <h3>Editing Results</h3>
+                </div>
+                <!-- Simulation Log -->
+                <div class="simulation-log-section">
+                    <h4>Simulation Log</h4>
+                    <pre class="simulation-log" id="simulation-log"></pre>
+                </div>
+                <!-- Sequence Alignment -->
+                <div class="alignment-section">
+                    <h4>Sequence Alignment</h4>
+                    <pre class="sequence-display alignment-display" id="alignment-display"></pre>
+                </div>
+                <!-- Status -->
+                <div class="crispr-status" id="crispr-status">
+                    <div class="status-indicator" id="status-indicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text" id="status-text">Awaiting simulation...</span>
+                    </div>
+                </div>
+                <!-- Repaired Sequence -->
+                <div class="repaired-section">
+                    <h4>Repaired Sequence</h4>
+                    <pre class="sequence-display repaired-display" id="repaired-sequence"></pre>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         FOOTER
+    ═══════════════════════════════════════════════════════════ -->
+    <footer class="site-footer" id="site-footer">
+        <div class="footer-inner">
+            <p class="footer-title">MangoGenomics Lab © 2026 — Bioinformatics Research Platform</p>
+            <p class="footer-meta">
+                Real Data: NCBI RefSeq GCF_011075055.1 (CATAS_Mindica_2.1) · Annotation Release 100 ·
+                GWAS Panel: 161 cultivars · 135,079 SNPs · 24 traits ·
+                Sources: Wang et al. (2024) Hort. Res., PRJCA025449; Luo et al. GenBank HM446507–HM446522
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/gwas.js"></script>
+    <script src="/static/js/crispr.js"></script>
+    <script src="/static/js/pedigree.js"></script>
+    <script src="/static/js/particles.js"></script>
+</body>
+</html>

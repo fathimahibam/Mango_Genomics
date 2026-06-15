@@ -1,0 +1,21 @@
+# Large datasets and databases
+mango_genes_real.db
+mango_real.gff
+mango_real.gff.gz
+mango.gff
+mango.gff.gz
+mango_genes.db
+synthetic_cultivars.db
+synthetic_cultivars.db-journal
+
+# Temporary / Output files
+__pycache__/
+*.pyc
+sys_gen_contents.txt
+select_out.txt
+speed_metrics.txt
+xgb_metrics.txt
+check_output.txt
+test_backup.txt
+gwas_predict_output.json
+gwas_predict_output_utf8.json

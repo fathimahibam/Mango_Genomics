@@ -1,0 +1,49 @@
+Metadata-Version: 2.4
+Name: gffutils
+Version: 0.14
+Summary: Work with GFF and GTF files in a flexible database framework
+Author-email: Ryan Dale <ryan.dale@nih.gov>
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/daler/gffutils
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: >=3.8
+Description-Content-Type: text/x-rst
+License-File: LICENSE
+Requires-Dist: pyfaidx>=0.5.5.2
+Requires-Dist: argh>=0.26.2
+Requires-Dist: argcomplete>=1.9.4
+Requires-Dist: simplejson
+Provides-Extra: test
+Requires-Dist: pytest; extra == "test"
+Provides-Extra: optional
+Requires-Dist: biopython>=1.73; extra == "optional"
+Requires-Dist: pybedtools>=0.8.0; extra == "optional"
+Provides-Extra: docs
+Requires-Dist: make; extra == "docs"
+Requires-Dist: numpydoc; extra == "docs"
+Requires-Dist: sphinx; extra == "docs"
+Requires-Dist: sphinx_rtd_theme; extra == "docs"
+Requires-Dist: sphinx-autoapi; extra == "docs"
+Dynamic: license-file
+
+gffutils
+========
+
+``gffutils`` is a Python package for working with and manipulating the GFF and
+GTF format files typically used for genomic annotations.
+
+Files are loaded into a sqlite3 database, allowing much more complex
+manipulation of hierarchical features (e.g., genes, transcripts, and exons)
+than is possible with plain-text methods alone.
+
+See documentation at https://daler.github.io/gffutils, and GitHub repo at
+https:/github.com/daler/gffutils.
