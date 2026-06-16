@@ -17,20 +17,22 @@ Endpoints:
   GET  /api/gwas/cultivar_comparison → Per-cultivar allele frequency comparison at top SNP
 """
 
-import sys
-sys.path.insert(0, r'C:\mangoproject\libs')
-
 import os
+import sys
 import json
 import math
-from flask import Flask, jsonify, request, render_template, g
 
+# Only insert local precompiled libs under Windows with Python 3.14
+if sys.platform == 'win32' and sys.version_info[:2] == (3, 14):
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, os.path.join(BASE_DIR, 'libs'))
+
+from flask import Flask, jsonify, request, render_template, g
 import gffutils
 
 # ---------------------------------------------------------------------------
 # App initialisation
 # ---------------------------------------------------------------------------
-BASE_DIR     = r'C:\mangoproject'
 # *** SWITCHED TO REAL NCBI ANNOTATED DATABASE ***
 DB_PATH      = os.path.join(BASE_DIR, 'mango_genes_real.db')
 GWAS_PATH    = os.path.join(BASE_DIR, 'static', 'data', 'gwas_data.json')
@@ -903,48 +905,45 @@ def search_genes():
     db = get_db()
     results = []
 
-    for gene in db.features_of_type('gene'):
-        name       = gene.attributes.get('Name', [''])[0]
-        locus_tag  = gene.attributes.get('locus_tag', [''])[0]
-        gene_name  = gene.attributes.get('gene', [''])[0]
-        gene_bio   = gene.attributes.get('gene_biotype', [''])[0]
-        dbxref     = ' '.join(gene.attributes.get('Dbxref', []))
+    # Use direct raw SQLite query on SQLite connection for maximum speed (O(100ms) instead of O(15s))
+    cur = db.conn.cursor()
+    cur.execute("SELECT id, seqid, start, end, strand, attributes FROM features WHERE featuretype='gene'")
+    rows = cur.fetchall()
 
-        # Collect product annotations from child mRNA/CDS features
-        products = []
+    for row in rows:
+        gene_id, seqid, start, end, strand, attr_json = row
+        
+        # Parse attributes from GFF database
         try:
-            for child in db.children(gene, featuretype='mRNA', level=1):
-                prod = child.attributes.get('product', [''])[0]
-                if prod:
-                    products.append(prod)
+            attrs = json.loads(attr_json)
         except Exception:
-            pass
-        if not products:
-            try:
-                for child in db.children(gene, featuretype='CDS', level=2):
-                    prod = child.attributes.get('product', [''])[0]
-                    if prod:
-                        products.append(prod)
-            except Exception:
-                pass
+            attrs = {}
+            
+        name       = attrs.get('Name', [''])[0]
+        locus_tag  = attrs.get('locus_tag', [''])[0]
+        gene_name  = attrs.get('gene', [''])[0]
+        gene_bio   = attrs.get('gene_biotype', [''])[0]
+        dbxref     = ' '.join(attrs.get('Dbxref', []))
 
-        product_str = '; '.join(set(products)) if products else gene_bio
+        # Use pre-populated GENE_PRODUCT_CACHE instead of SQLite child features queries
+        clean_id = gene_id[5:] if gene_id.startswith('gene-') else gene_id
+        product_str = GENE_PRODUCT_CACHE.get(clean_id, gene_bio)
 
         searchable = f'{name} {locus_tag} {gene_name} {gene_bio} {product_str}'.lower()
 
         if query in searchable:
             # Map RefSeq ID to friendly chromosome name
-            chr_name = REFSEQ_TO_CHR.get(gene.chrom, gene.chrom)
+            chr_name = REFSEQ_TO_CHR.get(seqid, seqid)
             results.append({
-                'gene_id':    gene.id,
+                'gene_id':    gene_id,
                 'name':       name or gene_name,
                 'locus_tag':  locus_tag or name,
                 'chromosome': chr_name,
-                'refseq_id':  gene.chrom,
-                'start':      gene.start,
-                'end':        gene.end,
-                'strand':     gene.strand,
-                'length_bp':  gene.end - gene.start,
+                'refseq_id':  seqid,
+                'start':      start,
+                'end':        end,
+                'strand':     strand,
+                'length_bp':  end - start,
                 'gene_type':  gene_bio,
                 'product':    product_str,
                 'dbxref':     dbxref,
@@ -1318,11 +1317,14 @@ def api_population_pca():
 @app.route('/api/breeder/rank', methods=['POST'])
 def api_breeder_rank():
     data = request.get_json(force=True)
-    w_brix = float(data.get('w_brix', 1.0))
-    w_pulp = float(data.get('w_pulp', 1.0))
-    w_seed = float(data.get('w_seed', 1.0))
-    w_stone = float(data.get('w_stone', 1.0))
-    
+    try:
+        w_brix = float(data.get('w_brix', 1.0))
+        w_pulp = float(data.get('w_pulp', 1.0))
+        w_seed = float(data.get('w_seed', 1.0))
+        w_stone = float(data.get('w_stone', 1.0))
+    except (ValueError, TypeError) as e:
+        return jsonify({'error': f"Invalid weight parameter: {str(e)}"}), 400
+        
     from prediction_engine import engine
     try:
         rankings = engine.rank_cultivars(w_brix, w_pulp, w_seed, w_stone)
@@ -1348,6 +1350,8 @@ def api_predict_new_cultivar():
             genotype_vector = engine.simulate_random_cultivar()
 
         res = engine.predict_new_cultivar(genotype_vector, model_type)
+        if 'error' in res:
+            return jsonify(res), 400
         return jsonify(res)
     except Exception as e:
         import traceback
@@ -1369,12 +1373,31 @@ def api_validation_holdout():
     from prediction_engine import engine
     try:
         res = engine.validate_holdout(holdout_cultivar, model_type)
-        # Fetch overall LOOCV metrics for a few key reference traits to show overall validation accuracy
-        loocv_metrics = {}
-        traits_to_show = ['fruitWeight (g)', 'brix', 'Pulp Ratio', 'Fruit Shape Index']
-        for t in traits_to_show:
-            loocv_metrics[t] = engine.get_loocv_metrics(t, model_type)
-        res['overall_loocv_metrics'] = loocv_metrics
+        if 'error' in res:
+            return jsonify(res), 404
+            
+        # Load precomputed LOOCV metrics from static/data/loocv_metrics.json
+        loocv_path = os.path.join(BASE_DIR, 'static', 'data', 'loocv_metrics.json')
+        if os.path.exists(loocv_path):
+            try:
+                with open(loocv_path, 'r', encoding='utf-8') as f:
+                    all_metrics = json.load(f)
+                res['overall_loocv_metrics'] = all_metrics.get(model_type, {})
+            except Exception:
+                # Fallback in case of parse/read errors
+                loocv_metrics = {}
+                traits_to_show = ['fruitWeight (g)', 'brix', 'Pulp Ratio', 'Fruit Shape Index']
+                for t in traits_to_show:
+                    loocv_metrics[t] = engine.get_loocv_metrics(t, model_type)
+                res['overall_loocv_metrics'] = loocv_metrics
+        else:
+            # Fallback in case file doesn't exist yet
+            loocv_metrics = {}
+            traits_to_show = ['fruitWeight (g)', 'brix', 'Pulp Ratio', 'Fruit Shape Index']
+            for t in traits_to_show:
+                loocv_metrics[t] = engine.get_loocv_metrics(t, model_type)
+            res['overall_loocv_metrics'] = loocv_metrics
+            
         return jsonify(res)
     except Exception as e:
         import traceback
@@ -1450,6 +1473,8 @@ def api_breeder_simulate_cross():
     from prediction_engine import engine
     try:
         res = engine.simulate_hybrid_cross(parent_a, parent_b, model_type)
+        if 'error' in res:
+            return jsonify(res), 404
         return jsonify(res)
     except Exception as e:
         import traceback
@@ -1565,6 +1590,8 @@ def api_pedigree_cross_f2():
     from prediction_engine import engine
     try:
         res = engine.simulate_f2_cross(parent_a, parent_b, parent_c, model_type)
+        if 'error' in res:
+            return jsonify(res), 404
         return jsonify(res)
     except Exception as e:
         import traceback

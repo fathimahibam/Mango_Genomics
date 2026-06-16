@@ -1,7 +1,10 @@
 import os
 import sys
 import json
-sys.path.insert(0, r'C:\mangoproject\libs')
+# Only insert local precompiled libs under Windows with Python 3.14
+if sys.platform == 'win32' and sys.version_info[:2] == (3, 14):
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, os.path.join(BASE_DIR, 'libs'))
 
 import numpy as np
 import pandas as pd
@@ -12,9 +15,8 @@ from sklearn.ensemble import RandomForestRegressor
 import xgboost as xgb
 from scipy.stats import pearsonr
 
-BASE_DIR   = r'C:\mangoproject'
-CSV_FILE   = r'C:\mangoproject\SNP.csv'
-PHENO_FILE = r'C:\mangoproject\phenotypes.xlsx'
+CSV_FILE   = os.path.join(BASE_DIR, 'SNP.csv')
+PHENO_FILE = os.path.join(BASE_DIR, 'phenotypes.xlsx')
 
 REFSEQ_TO_CHR = {
     'NC_058137.1': 'Chr1',  'NC_058138.1': 'Chr2',  'NC_058139.1': 'Chr3',
@@ -28,6 +30,18 @@ REFSEQ_TO_CHR = {
 
 def clean_id(s):
     return re.sub(r'[^a-zA-Z0-9]', '', str(s)).lower()
+
+def get_mapped_clean(name):
+    # Strip parentheses and their contents, e.g. "Alphonso (Hapus)" -> "Alphonso"
+    name_clean = re.sub(r'\(.*?\)', '', str(name)).strip()
+    c = clean_id(name_clean)
+    aliases = {
+        'sindhri': 'shindiri',
+        'alphonso': 'whitealfonso',
+        'tommy_atkins': 'tommyatkins',
+        'tommyatkins': 'tommyatkins',
+    }
+    return aliases.get(c, c)
 
 class BreedingEngine:
     def __init__(self):
@@ -142,6 +156,32 @@ class BreedingEngine:
             X[i] = dosage
             
         self.X = X.T # Shape: (n_samples, n_snps)
+        
+        # Fit PCA on reference population to project uploaded/new genotypes using same fitted model
+        from sklearn.decomposition import PCA
+        self.pca_model = PCA(n_components=3, random_state=42)
+        self.pca_model.fit(self.X)
+        
+        self.trait_std_X = {}
+        all_traits = [
+            'fruitWeight (g)', 'fruitLength (mm)', 'fruitWidth (mm)', 'fruitThickness (mm)',
+            'brix', 'Pulp', 'seedWeight (g)', 'stoneWeight (g)',
+            'seedLength (mm)', 'seedWidth (mm)', 'seedThickness (mm)',
+            'stoneLength (mm)', 'stoneWidth (mm)', 'stoneThickness (mm)',
+            'Fruit Shape Index', 'Pulp Ratio', 'Seed Ratio', 'Stone Ratio',
+            'Edible Portion', 'Brix Yield Index', 'Fruit Density Index',
+            'Pulp-to-Seed Ratio', 'Pulp-to-Stone Ratio', 'Sweetness Efficiency Index'
+        ]
+        print("[PredictionEngine] Precomputing SNP variance per trait...")
+        for trait in all_traits:
+            y = self.df_pheno[trait].values
+            valid_mask = ~np.isnan(y)
+            X_clean = self.X[valid_mask]
+            sum_X = np.sum(X_clean, axis=0)
+            sum_X2 = np.sum(X_clean**2, axis=0)
+            var_X = sum_X2 - (sum_X**2) / np.sum(valid_mask)
+            var_X[var_X == 0] = 1.0
+            self.trait_std_X[trait] = np.sqrt(var_X).astype(np.float32)
         self.is_loaded = True
 
     def train_predict(self, trait, model_type):
@@ -332,7 +372,7 @@ class BreedingEngine:
             }
         }
 
-    def predict_new_cultivar(self, genotype_vector, model_type='rrBLUP'):
+    def predict_new_cultivar(self, genotype_vector, model_type='rrBLUP', bootstrap=True):
         """
         Predict all phenotypic traits for a new cultivar given its SNP genotype vector.
         Returns predictions with bootstrap confidence intervals, top contributing SNPs,
@@ -342,6 +382,19 @@ class BreedingEngine:
 
         if len(genotype_vector) != self.X.shape[1]:
             return {'error': f'Expected {self.X.shape[1]} SNP values, got {len(genotype_vector)}.'}
+
+        if not hasattr(self, '_prediction_cache'):
+            self._prediction_cache = {}
+        sig = (
+            len(genotype_vector),
+            float(genotype_vector[0]),
+            float(genotype_vector[len(genotype_vector)//2]),
+            float(genotype_vector[-1]),
+            model_type,
+            bootstrap
+        )
+        if sig in self._prediction_cache:
+            return self._prediction_cache[sig]
 
         new_X = np.array(genotype_vector, dtype=np.float32).reshape(1, -1)
 
@@ -363,66 +416,133 @@ class BreedingEngine:
             y = self.df_pheno[trait].values
             valid_mask = ~np.isnan(y)
             y_clean = y[valid_mask]
-            X_clean = self.X[valid_mask]
+            if np.all(valid_mask):
+                X_clean = self.X
+            else:
+                X_clean = self.X[valid_mask]
 
             if len(y_clean) < 10:
                 continue
 
-            # Feature selection (top 500)
-            y_centered = y_clean - np.mean(y_clean)
-            X_centered = X_clean - np.mean(X_clean, axis=0, keepdims=True)
-            cov = np.dot(y_centered, X_centered)
-            var_X = np.sum(X_centered**2, axis=0)
-            var_X[var_X == 0] = 1.0
-            var_y = np.sum(y_centered**2)
-            if var_y == 0:
-                var_y = 1.0
-            corr = cov / np.sqrt(var_X * var_y)
-            abs_corr = np.abs(corr)
+            cache_key = (trait, model_type)
+            if not hasattr(self, '_model_cache'):
+                self._model_cache = {}
 
-            top_k = min(500, X_clean.shape[1])
-            selected_features = np.argsort(abs_corr)[::-1][:top_k]
-            X_selected = X_clean[:, selected_features]
+            if cache_key not in self._model_cache:
+                # 1. Feature selection (only run once per model type/trait)
+                y_centered = (y_clean - np.mean(y_clean)).astype(np.float32)
+                cov = np.dot(y_centered, X_clean)
+                var_y = np.sum(y_centered**2)
+                if var_y == 0:
+                    var_y = 1.0
+                corr = cov / (self.trait_std_X[trait] * np.sqrt(var_y))
+                abs_corr = np.abs(corr)
+
+                top_k = min(500, X_clean.shape[1])
+                selected_features = np.argsort(abs_corr)[::-1][:top_k]
+                X_selected = X_clean[:, selected_features]
+
+                # 2. Train main model
+                if model_type == 'rrBLUP':
+                    n_features = X_selected.shape[1]
+                    mean_y = np.mean(y_clean)
+                    mean_X = np.mean(X_selected, axis=0)
+                    y_centered_fit = y_clean - mean_y
+                    X_centered_fit = X_selected - mean_X
+                    A = np.dot(X_centered_fit.T, X_centered_fit) + 100.0 * np.eye(n_features)
+                    b = np.dot(X_centered_fit.T, y_centered_fit)
+                    beta = np.linalg.solve(A, b)
+                    importances = np.abs(beta)
+
+                    model_dict = {
+                        'mean_y': mean_y,
+                        'mean_X': mean_X,
+                        'beta': beta,
+                        'importances': importances
+                    }
+                else:
+                    if model_type == 'Random Forest':
+                        model = RandomForestRegressor(n_estimators=50, random_state=42, n_jobs=-1)
+                    else:
+                        model = xgb.XGBRegressor(n_estimators=50, max_depth=3, learning_rate=0.1, random_state=42, n_jobs=-1)
+                    model.fit(X_selected, y_clean)
+                    importances = model.feature_importances_
+
+                    model_dict = {
+                        'model': model,
+                        'importances': importances
+                    }
+
+                self._model_cache[cache_key] = {
+                    'selected_features': selected_features,
+                    'model_dict': model_dict,
+                    'boot_data': [],
+                    'population_mean': float(np.mean(y_clean)),
+                    'population_std': float(np.std(y_clean))
+                }
+
+            cached_data = self._model_cache[cache_key]
+            selected_features = cached_data['selected_features']
             new_X_sel = new_X[:, selected_features]
+            model_dict = cached_data['model_dict']
 
-            # Initialize model
+            # 3. Train bootstrap models if requested and not already trained
+            if bootstrap and not cached_data['boot_data']:
+                X_selected = X_clean[:, selected_features]
+                boot_data = []
+                rng = np.random.RandomState(42)
+                for _ in range(20):
+                    boot_idx = rng.choice(len(y_clean), size=len(y_clean), replace=True)
+                    if model_type == 'rrBLUP':
+                        y_boot = y_clean[boot_idx]
+                        X_boot = X_selected[boot_idx]
+                        mean_y_b = np.mean(y_boot)
+                        mean_X_b = np.mean(X_boot, axis=0)
+                        y_c_b = y_boot - mean_y_b
+                        X_c_b = X_boot - mean_X_b
+                        A_b = np.dot(X_c_b.T, X_c_b) + 100.0 * np.eye(X_boot.shape[1])
+                        b_b = np.dot(X_c_b.T, y_c_b)
+                        beta_b = np.linalg.solve(A_b, b_b)
+                        boot_data.append({
+                            'mean_y_b': mean_y_b,
+                            'mean_X_b': mean_X_b,
+                            'beta_b': beta_b
+                        })
+                    else:
+                        model_boot = model_dict['model'].__class__(**{k: v for k, v in model_dict['model'].get_params().items() if k != 'n_jobs'}, n_jobs=-1)
+                        model_boot.fit(X_selected[boot_idx], y_clean[boot_idx])
+                        boot_data.append({'model_boot': model_boot})
+                cached_data['boot_data'] = boot_data
+
             if model_type == 'rrBLUP':
-                model = Ridge(alpha=100.0)
-            elif model_type == 'Random Forest':
-                model = RandomForestRegressor(n_estimators=50, random_state=42, n_jobs=-1)
+                pred_val = float(model_dict['mean_y'] + np.dot(new_X_sel[0] - model_dict['mean_X'], model_dict['beta']))
+                importances = model_dict['importances']
             else:
-                model = xgb.XGBRegressor(n_estimators=50, max_depth=3, learning_rate=0.1, random_state=42, n_jobs=-1)
+                pred_val = float(model_dict['model'].predict(new_X_sel)[0])
+                importances = model_dict['importances']
 
-            # Train on full data, predict new cultivar
-            model.fit(X_selected, y_clean)
-            pred_val = float(model.predict(new_X_sel)[0])
-
-            # Bootstrap confidence interval (20 iterations for speed)
-            boot_preds = []
-            rng = np.random.RandomState(42)
-            for _ in range(20):
-                boot_idx = rng.choice(len(y_clean), size=len(y_clean), replace=True)
-                model_boot = Ridge(alpha=100.0) if model_type == 'rrBLUP' else model.__class__(**{k: v for k, v in model.get_params().items() if k != 'n_jobs'}, n_jobs=-1)
-                model_boot.fit(X_selected[boot_idx], y_clean[boot_idx])
-                boot_preds.append(float(model_boot.predict(new_X_sel)[0]))
-
-            ci_lower = float(np.percentile(boot_preds, 2.5))
-            ci_upper = float(np.percentile(boot_preds, 97.5))
+            if bootstrap:
+                boot_preds = []
+                for b_item in cached_data['boot_data']:
+                    if model_type == 'rrBLUP':
+                        boot_preds.append(float(b_item['mean_y_b'] + np.dot(new_X_sel[0] - b_item['mean_X_b'], b_item['beta_b'])))
+                    else:
+                        boot_preds.append(float(b_item['model_boot'].predict(new_X_sel)[0]))
+                ci_lower = float(np.percentile(boot_preds, 2.5))
+                ci_upper = float(np.percentile(boot_preds, 97.5))
+            else:
+                ci_lower = pred_val
+                ci_upper = pred_val
 
             predictions[trait] = {
                 'predicted': round(pred_val, 3),
                 'ci_lower': round(ci_lower, 3),
                 'ci_upper': round(ci_upper, 3),
                 'unit': self._get_unit(trait),
-                'population_mean': round(float(np.mean(y_clean)), 3),
-                'population_std': round(float(np.std(y_clean)), 3)
+                'population_mean': round(cached_data['population_mean'], 3),
+                'population_std': round(cached_data['population_std'], 3)
             }
 
-            # Top 5 contributing SNPs for this trait
-            if model_type == 'rrBLUP':
-                importances = np.abs(model.coef_)
-            else:
-                importances = model.feature_importances_
             top_indices = np.argsort(importances)[::-1][:5]
             trait_snps = []
             for idx in top_indices:
@@ -449,13 +569,24 @@ class BreedingEngine:
         # Genetic similarity
         similarity = self._get_genetic_similarity(new_X[0])
 
-        return {
+        # Project new cultivar onto the same fitted PCA space of the 161-accession panel
+        projected_coords = self.pca_model.transform(new_X)[0]
+        pca_coords = {
+            'pc1': float(projected_coords[0]),
+            'pc2': float(projected_coords[1]),
+            'pc3': float(projected_coords[2])
+        }
+
+        res = {
             'predictions': predictions,
             'top_snps_per_trait': top_snps_per_trait,
             'similar_cultivars': similarity,
+            'pca_coordinates': pca_coords,
             'model_used': model_type,
             'n_training_samples': int(np.sum(~np.isnan(self.df_pheno['fruitWeight (g)'].values)))
         }
+        self._prediction_cache[sig] = res
+        return res
 
     def _get_unit(self, trait):
         units = {
@@ -472,10 +603,13 @@ class BreedingEngine:
 
     def _get_genetic_similarity(self, new_genotype, top_n=5):
         """Return the top_n most genetically similar cultivars using Euclidean distance."""
+        self.load_data()
+        new_gt_arr = np.array(new_genotype, dtype=np.float32).reshape(1, -1)
+        dists = np.sqrt(np.sum((self.X - new_gt_arr) ** 2, axis=1))
+        
         distances = []
         for i in range(self.X.shape[0]):
-            dist = np.sqrt(np.sum((self.X[i] - new_genotype) ** 2))
-            distances.append((str(self.cultivars[i]), float(dist)))
+            distances.append((str(self.cultivars[i]), float(dists[i])))
         distances.sort(key=lambda x: x[1])
 
         max_dist = distances[-1][1] if distances[-1][1] > 0 else 1.0
@@ -556,16 +690,6 @@ class BreedingEngine:
         self.load_data()
         
         # Match holdout cultivar name
-        def get_mapped_clean(name):
-            c = clean_id(name)
-            aliases = {
-                'sindhri': 'shindiri',
-                'alphonso': 'whitealfonso',
-                'tommy_atkins': 'tommyatkins',
-                'tommyatkins': 'tommyatkins',
-            }
-            return aliases.get(c, c)
-
         clean_holdout = get_mapped_clean(holdout_cultivar)
         matched_idx = -1
         for idx, cv in enumerate(self.cultivars):
@@ -908,16 +1032,7 @@ class BreedingEngine:
         """
         self.load_data()
         
-        # Find parent indices
-        def get_mapped_clean(name):
-            c = clean_id(name)
-            aliases = {
-                'sindhri': 'shindiri',
-                'alphonso': 'whitealfonso',
-                'tommy_atkins': 'tommyatkins',
-                'tommyatkins': 'tommyatkins',
-            }
-            return aliases.get(c, c)
+
 
         idx_a = -1
         idx_b = -1
@@ -948,28 +1063,18 @@ class BreedingEngine:
         offspring_genotype = contrib_a + contrib_b
         
         # Predict traits
-        res_offspring = self.predict_new_cultivar(offspring_genotype.tolist(), model_type)
-        res_a = self.predict_new_cultivar(genotype_a.tolist(), model_type)
-        res_b = self.predict_new_cultivar(genotype_b.tolist(), model_type)
+        res_offspring = self.predict_new_cultivar(offspring_genotype.tolist(), model_type, bootstrap=False)
+        res_a = self.predict_new_cultivar(genotype_a.tolist(), model_type, bootstrap=False)
+        res_b = self.predict_new_cultivar(genotype_b.tolist(), model_type, bootstrap=False)
         
         # PCA distance
-        pca_path = os.path.join(BASE_DIR, 'static', 'data', 'pca_data.json')
         pca_dist = 0.0
-        if os.path.exists(pca_path):
-            try:
-                with open(pca_path, 'r', encoding='utf-8') as f:
-                    pca_data = json.load(f)
-                coords_a = None
-                coords_b = None
-                for item in pca_data.get('samples', []):
-                    if clean_id(item['id']) == clean_id(parent_a_id):
-                        coords_a = np.array([item['pc1'], item['pc2']])
-                    if clean_id(item['id']) == clean_id(parent_b_id):
-                        coords_b = np.array([item['pc1'], item['pc2']])
-                if coords_a is not None and coords_b is not None:
-                    pca_dist = float(np.sqrt(np.sum((coords_a - coords_b) ** 2)))
-            except Exception:
-                pass
+        try:
+            coords_a = self.pca_model.transform(genotype_a.reshape(1, -1))[0]
+            coords_b = self.pca_model.transform(genotype_b.reshape(1, -1))[0]
+            pca_dist = float(np.sqrt(np.sum((coords_a[:2] - coords_b[:2]) ** 2)))
+        except Exception:
+            pass
                 
         return {
             'parent_a': parent_a_id,
@@ -987,16 +1092,7 @@ class BreedingEngine:
         """
         self.load_data()
         
-        # Find parent indices
-        def get_mapped_clean(name):
-            c = clean_id(name)
-            aliases = {
-                'sindhri': 'shindiri',
-                'alphonso': 'whitealfonso',
-                'tommy_atkins': 'tommyatkins',
-                'tommyatkins': 'tommyatkins',
-            }
-            return aliases.get(c, c)
+
 
         idx_a, idx_b, idx_c = -1, -1, -1
         for idx, cv in enumerate(self.cultivars):
@@ -1047,37 +1143,25 @@ class BreedingEngine:
         genotype_f2 = contrib_f1 + contrib_c
         
         # Predict traits for all nodes in the tree
-        res_f2 = self.predict_new_cultivar(genotype_f2.tolist(), model_type)
-        res_f1 = self.predict_new_cultivar(genotype_f1.tolist(), model_type)
-        res_a = self.predict_new_cultivar(genotype_a.tolist(), model_type)
-        res_b = self.predict_new_cultivar(genotype_b.tolist(), model_type)
-        res_c = self.predict_new_cultivar(genotype_c.tolist(), model_type)
+        res_f2 = self.predict_new_cultivar(genotype_f2.tolist(), model_type, bootstrap=False)
+        res_f1 = self.predict_new_cultivar(genotype_f1.tolist(), model_type, bootstrap=False)
+        res_a = self.predict_new_cultivar(genotype_a.tolist(), model_type, bootstrap=False)
+        res_b = self.predict_new_cultivar(genotype_b.tolist(), model_type, bootstrap=False)
+        res_c = self.predict_new_cultivar(genotype_c.tolist(), model_type, bootstrap=False)
         
         # Calculate PCA genetic distances
-        pca_path = os.path.join(BASE_DIR, 'static', 'data', 'pca_data.json')
         pca_dist_f1 = 0.0
         pca_dist_f2 = 0.0
-        if os.path.exists(pca_path):
-            try:
-                with open(pca_path, 'r', encoding='utf-8') as f:
-                    pca_data = json.load(f)
-                coords_a = None
-                coords_b = None
-                coords_c = None
-                for item in pca_data.get('samples', []):
-                    if clean_id(item['id']) == clean_id(parent_a_id):
-                        coords_a = np.array([item['pc1'], item['pc2']])
-                    if clean_id(item['id']) == clean_id(parent_b_id):
-                        coords_b = np.array([item['pc1'], item['pc2']])
-                    if clean_id(item['id']) == clean_id(parent_c_id):
-                        coords_c = np.array([item['pc1'], item['pc2']])
-                if coords_a is not None and coords_b is not None:
-                    pca_dist_f1 = float(np.sqrt(np.sum((coords_a - coords_b) ** 2)))
-                    if coords_c is not None:
-                        coords_f1 = 0.5 * (coords_a + coords_b)
-                        pca_dist_f2 = float(np.sqrt(np.sum((coords_f1 - coords_c) ** 2)))
-            except Exception:
-                pass
+        try:
+            coords_a = self.pca_model.transform(genotype_a.reshape(1, -1))[0]
+            coords_b = self.pca_model.transform(genotype_b.reshape(1, -1))[0]
+            coords_c = self.pca_model.transform(genotype_c.reshape(1, -1))[0]
+            coords_f1 = self.pca_model.transform(genotype_f1.reshape(1, -1))[0]
+            
+            pca_dist_f1 = float(np.sqrt(np.sum((coords_a[:2] - coords_b[:2]) ** 2)))
+            pca_dist_f2 = float(np.sqrt(np.sum((coords_f1[:2] - coords_c[:2]) ** 2)))
+        except Exception:
+            pass
                 
         return {
             'parent_a': parent_a_id,
