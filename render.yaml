@@ -8,7 +8,5 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.10
-      - key: PORT
-        value: 10000
     healthCheckPath: /
     autoDeploy: true
