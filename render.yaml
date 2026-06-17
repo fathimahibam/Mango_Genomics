@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: mango-genomics-lab
+    runtime: python
+    plan: standard
+    buildCommand: bash build.sh
+    startCommand: python run.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10
+      - key: PORT
+        value: 10000
+    healthCheckPath: /
+    autoDeploy: true

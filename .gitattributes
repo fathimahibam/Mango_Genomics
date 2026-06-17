@@ -1,0 +1,5 @@
+static/data/*.json filter=lfs diff=lfs merge=lfs -text
+*.db filter=lfs diff=lfs merge=lfs -text
+*.gff filter=lfs diff=lfs merge=lfs -text
+SNP.csv filter=lfs diff=lfs merge=lfs -text
+phenotypes.xlsx filter=lfs diff=lfs merge=lfs -text

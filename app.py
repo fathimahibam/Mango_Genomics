@@ -22,9 +22,10 @@ import sys
 import json
 import math
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Only insert local precompiled libs under Windows with Python 3.14
 if sys.platform == 'win32' and sys.version_info[:2] == (3, 14):
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     sys.path.insert(0, os.path.join(BASE_DIR, 'libs'))
 
 from flask import Flask, jsonify, request, render_template, g
@@ -65,11 +66,20 @@ GENE_PRODUCT_CACHE = {}
 
 def load_gene_products_gff():
     gff_path = os.path.join(BASE_DIR, 'mango_real.gff')
+    gff_gz_path = os.path.join(BASE_DIR, 'mango_real.gff.gz')
     products = {}
+    # Prefer uncompressed file; fall back to gzipped version
     if not os.path.exists(gff_path):
-        return products
+        if os.path.exists(gff_gz_path):
+            import gzip
+            open_fn = lambda p: gzip.open(p, 'rt', encoding='utf-8', errors='ignore')
+            gff_path = gff_gz_path
+        else:
+            return products
+    else:
+        open_fn = lambda p: open(p, 'r', encoding='utf-8', errors='ignore')
     try:
-        with open(gff_path, 'r', encoding='utf-8', errors='ignore') as f:
+        with open_fn(gff_path) as f:
             for line in f:
                 if line.startswith('#'):
                     continue

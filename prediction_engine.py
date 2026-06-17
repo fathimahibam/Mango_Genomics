@@ -1,9 +1,11 @@
 import os
 import sys
 import json
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Only insert local precompiled libs under Windows with Python 3.14
 if sys.platform == 'win32' and sys.version_info[:2] == (3, 14):
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     sys.path.insert(0, os.path.join(BASE_DIR, 'libs'))
 
 import numpy as np
